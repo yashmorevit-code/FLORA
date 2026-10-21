@@ -58,3 +58,8 @@ wheat_ignat_*
 # Unused scratch asset candidates (preserves all production assets in public/assets/plants/*)
 public/assets/plants/candidates/
 referrencevideos/
+
+.vercel
+
+deployment_verification_screenshots/
+
