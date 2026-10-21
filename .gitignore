@@ -1,0 +1,60 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Production build output
+dist/
+dist-ssr/
+*.local
+
+# Vercel deployment artifacts
+.vercel/
+
+# Environment variables & secrets
+.env
+.env.*.local
+
+# Operating System & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Temporary screenshots & testing artifacts
+landing_verification_screenshots/
+redesign_screenshots/
+strawberry_fix_screenshots/
+screenshot_*.png
+test_*.png
+test_*.jpg
+pepper_*.png
+straw_*.png
+straw_*.jpg
+Strawberry_*.png
+Strawberry_*.jpg
+*.csv
+*.json.gz
+crop_matches.txt
+specimen_*.txt
+florazia_oryza.html
+
+# Scraping & temporary testing scripts
+*.py
+*.cjs
+scratch_*.js
+scratch_*.cjs
+inspect_browser.js
+
+# Scratch search logs & scratch textures
+*_candidates*.json
+cereal_*.json
+lvis_*.json
+paths_*.json
+sketchfab_*.json
+candidates_*.json
+poaceae_*.json
+wheat_ignat_*
+
+# Unused scratch asset candidates (preserves all production assets in public/assets/plants/*)
+public/assets/plants/candidates/
+referrencevideos/

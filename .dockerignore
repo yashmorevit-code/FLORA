@@ -1,0 +1,39 @@
+# Dependency cache
+node_modules/
+.pnpm-store/
+
+# Local build artifacts
+dist/
+
+# Git metadata
+.git/
+.gitignore
+
+# Environment files and credentials
+.env
+.env*.local
+
+# Logs and debug output
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# System and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Test outputs
+coverage/
+.vitest/
+
+# Duplicate root media directory (assets are in public/referrencevideos)
+referrencevideos/

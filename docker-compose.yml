@@ -1,0 +1,52 @@
+services:
+  # ==========================================
+  # Production Service: Nginx serving optimized static assets
+  # ==========================================
+  flora-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: flora-plant-simulator
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:80"
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:80/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    labels:
+      - "app.name=flora-plant-simulator"
+      - "app.description=Botanical 3D Plant Growth Simulator"
+
+  # ==========================================
+  # Development Service: Vite Dev Server with Live Reload
+  # Start with: docker compose --profile dev up flora-dev
+  # ==========================================
+  flora-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: flora-dev-server
+    restart: "no"
+    ports:
+      - "${DEV_PORT:-5174}:5173"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./index.html:/app/index.html
+      - ./package.json:/app/package.json
+      - ./vite.config.js:/app/vite.config.js
+      - /app/node_modules
+    profiles:
+      - dev
+    labels:
+      - "app.name=flora-dev-server"
+      - "app.description=FLORA Development Server with HMR"

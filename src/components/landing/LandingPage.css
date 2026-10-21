@@ -1,0 +1,1739 @@
+/* ==========================================================================
+   FLORA — CINEMATIC INTERACTIVE LANDING PAGE STYLES
+   Scoped entirely to .flora-landing-* to protect simulator styling
+   ========================================================================== */
+
+.flora-landing-container {
+  width: 100%;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  background-color: #080F0C;
+  background-image: 
+    radial-gradient(circle at 50% 15%, rgba(20, 48, 30, 0.35) 0%, transparent 60%),
+    radial-gradient(circle at 85% 65%, rgba(15, 34, 22, 0.25) 0%, transparent 50%),
+    linear-gradient(180deg, #080F0C 0%, #0c1811 50%, #080F0C 100%);
+  color: #EEF2EB;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Botanical Scrollbar */
+.flora-landing-container::-webkit-scrollbar {
+  width: 8px;
+}
+.flora-landing-container::-webkit-scrollbar-track {
+  background: #080F0C;
+}
+.flora-landing-container::-webkit-scrollbar-thumb {
+  background: rgba(145, 173, 145, 0.25);
+  border-radius: 4px;
+}
+.flora-landing-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(145, 173, 145, 0.45);
+}
+
+/* ==========================================================================
+   NAVIGATION BAR
+   ========================================================================== */
+.flora-landing-nav {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 16px 32px;
+  background: transparent;
+}
+
+.flora-landing-nav.scrolled {
+  background: rgba(10, 18, 13, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(177, 203, 177, 0.14);
+  padding: 12px 32px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+}
+
+.flora-landing-nav-inner {
+  max-width: 1380px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Brand */
+.flora-landing-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.flora-landing-logo-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, rgba(66, 107, 80, 0.8), rgba(30, 55, 38, 0.9));
+  border: 1px solid rgba(145, 173, 145, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a3d9a5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.flora-landing-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.flora-landing-brand-title {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #EEF2EB;
+  line-height: 1.1;
+}
+
+.flora-landing-brand-sub {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: #94A095;
+}
+
+/* Nav Links */
+.flora-landing-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.flora-landing-nav-link {
+  background: none;
+  border: none;
+  color: #C5CEC3;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 4px;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.flora-landing-nav-link:hover {
+  color: #EEF2EB;
+}
+
+.flora-landing-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: #52c77a;
+  transition: width 0.25s ease;
+  border-radius: 1px;
+}
+
+.flora-landing-nav-link:hover::after {
+  width: 100%;
+}
+
+/* Nav Actions */
+.flora-landing-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Primary Button */
+.flora-landing-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #426B50, #2d4d38);
+  border: 1px solid rgba(145, 173, 145, 0.4);
+  color: #EEF2EB;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 10px 22px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(18, 38, 25, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.flora-landing-btn-primary:hover {
+  background: linear-gradient(135deg, #4d7a5b, #355840);
+  border-color: rgba(163, 217, 165, 0.65);
+  box-shadow: 0 6px 24px rgba(45, 85, 55, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.flora-landing-btn-primary:active {
+  transform: translateY(0);
+}
+
+.flora-landing-btn-primary.large {
+  padding: 14px 28px;
+  font-size: 15px;
+  border-radius: 11px;
+}
+
+.flora-landing-btn-primary.full-width {
+  width: 100%;
+}
+
+.flora-btn-arrow {
+  transition: transform 0.25s ease;
+}
+
+.flora-landing-btn-primary:hover .flora-btn-arrow {
+  transform: translateX(4px);
+}
+
+/* Secondary Button */
+.flora-landing-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(25, 42, 31, 0.7);
+  border: 1px solid rgba(177, 203, 177, 0.22);
+  color: #C5CEC3;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.flora-landing-btn-secondary:hover {
+  background: rgba(35, 58, 43, 0.85);
+  color: #EEF2EB;
+  border-color: rgba(177, 203, 177, 0.45);
+}
+
+/* Ghost Button */
+.flora-landing-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid rgba(177, 203, 177, 0.18);
+  color: #C5CEC3;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 13px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.flora-landing-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #EEF2EB;
+  border-color: rgba(177, 203, 177, 0.35);
+}
+
+/* Mobile Toggle */
+.flora-landing-mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: #EEF2EB;
+  cursor: pointer;
+  padding: 6px;
+}
+
+.flora-landing-mobile-drawer {
+  display: none;
+}
+
+/* ==========================================================================
+   HERO SECTION
+   ========================================================================== */
+.flora-landing-hero {
+  position: relative;
+  min-height: calc(100vh - 80px);
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 40px 32px 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.flora-hero-ambient-glow {
+  position: absolute;
+  top: 15%;
+  right: 10%;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(66, 107, 80, 0.16) 0%, transparent 70%);
+  pointer-events: none;
+  filter: blur(48px);
+}
+
+.flora-hero-content-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+/* Hero Text Column */
+.flora-hero-text-col {
+  display: flex;
+  flex-direction: column;
+  z-index: 2;
+}
+
+.flora-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(30, 52, 38, 0.65);
+  border: 1px solid rgba(145, 173, 145, 0.28);
+  padding: 6px 14px;
+  border-radius: 100px;
+  width: fit-content;
+  margin-bottom: 24px;
+}
+
+.flora-eyebrow-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #52c77a;
+  box-shadow: 0 0 8px #52c77a;
+}
+
+.flora-eyebrow-text {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #a3d9a5;
+  text-transform: uppercase;
+}
+
+.flora-hero-headline {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-size: clamp(32px, 5.2vw, 68px);
+  font-weight: 600;
+  line-height: 1.12;
+  color: #F4F7F2;
+  letter-spacing: -0.015em;
+  margin-bottom: 20px;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.flora-headline-italic {
+  font-style: italic;
+  font-weight: 400;
+  color: #91AD91;
+}
+
+.flora-hero-lead {
+  font-size: clamp(16px, 1.4vw, 18.5px);
+  line-height: 1.6;
+  color: #C5CEC3;
+  max-width: 540px;
+  margin-bottom: 32px;
+}
+
+.flora-hero-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+}
+
+/* Specimen Switcher */
+.flora-hero-specimen-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 36px;
+}
+
+.flora-specimen-selector-label {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: #849287;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.flora-specimen-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.flora-specimen-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(20, 34, 25, 0.65);
+  border: 1px solid rgba(177, 203, 177, 0.16);
+  padding: 6px 14px;
+  border-radius: 8px;
+  color: #ADB9AE;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.flora-specimen-pill:hover {
+  background: rgba(30, 50, 36, 0.85);
+  color: #EEF2EB;
+  border-color: rgba(177, 203, 177, 0.35);
+}
+
+.flora-specimen-pill.active {
+  background: rgba(45, 75, 55, 0.85);
+  border-color: #52c77a;
+  color: #FFFFFF;
+  box-shadow: 0 0 12px rgba(82, 199, 122, 0.25);
+}
+
+.flora-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6ba87d;
+}
+
+.flora-specimen-pill.active .flora-pill-dot {
+  background: #52c77a;
+  box-shadow: 0 0 6px #52c77a;
+}
+
+.flora-pill-name {
+  font-weight: 500;
+}
+
+/* Stats Row */
+.flora-hero-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(177, 203, 177, 0.12);
+}
+
+.flora-stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.flora-stat-val {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-size: 26px;
+  font-weight: 700;
+  color: #EEF2EB;
+  line-height: 1.1;
+}
+
+.flora-stat-lbl {
+  font-size: 11.5px;
+  color: #849287;
+  letter-spacing: 0.02em;
+}
+
+.flora-stat-sep {
+  width: 1px;
+  height: 32px;
+  background: rgba(177, 203, 177, 0.15);
+}
+
+/* Hero Stage Column (3D Viewport) */
+.flora-hero-stage-col {
+  position: relative;
+  width: 100%;
+  height: 560px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flora-hero-3d-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 50%, #0e1b13 0%, #09130d 100%);
+  border: 1px solid rgba(177, 203, 177, 0.2);
+  box-shadow: 
+    0 24px 64px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.flora-hero-canvas-wrapper {
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.flora-hero-canvas-wrapper:active {
+  cursor: grabbing;
+}
+
+/* Specimen Info Tag (Floating Glass) */
+.flora-stage-specimen-tag {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 10;
+  background: rgba(14, 25, 18, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(177, 203, 177, 0.22);
+  padding: 10px 14px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.flora-tag-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.flora-tag-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #52c77a;
+  box-shadow: 0 0 6px #52c77a;
+}
+
+.flora-tag-latin {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-style: italic;
+  font-size: 11px;
+  color: #91AD91;
+}
+
+.flora-tag-body {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.flora-tag-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #EEF2EB;
+}
+
+.flora-tag-badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  background: rgba(66, 107, 80, 0.4);
+  border: 1px solid rgba(145, 173, 145, 0.3);
+  color: #a3d9a5;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.flora-tag-hover-info {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #e59866;
+  margin-top: 4px;
+  border-top: 1px solid rgba(177, 203, 177, 0.15);
+  padding-top: 4px;
+}
+
+.flora-hover-bullet {
+  font-weight: bold;
+}
+
+/* Stage Hint Pill */
+.flora-stage-hint-pill {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 10;
+  background: rgba(12, 22, 16, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(177, 203, 177, 0.18);
+  padding: 6px 12px;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #94A095;
+  pointer-events: none;
+}
+
+/* Scroll down indicator */
+.flora-scroll-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 30px auto 0;
+  cursor: pointer;
+  user-select: none;
+  opacity: 0.65;
+  transition: opacity 0.2s ease;
+}
+
+.flora-scroll-indicator:hover {
+  opacity: 1;
+}
+
+.flora-scroll-text {
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  color: #849287;
+  font-weight: 600;
+}
+
+.flora-scroll-chevron {
+  animation: floraBounce 2s infinite ease-in-out;
+  color: #91AD91;
+}
+
+@keyframes floraBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+
+/* ==========================================================================
+   GENERIC SECTION HEADER
+   ========================================================================== */
+.flora-landing-section {
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 100px 32px;
+}
+
+.flora-section-header {
+  max-width: 760px;
+  margin-bottom: 54px;
+}
+
+.flora-section-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #91AD91;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin-bottom: 14px;
+}
+
+.flora-section-title {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-size: clamp(32px, 3.6vw, 48px);
+  font-weight: 600;
+  line-height: 1.15;
+  color: #EEF2EB;
+  margin-bottom: 16px;
+}
+
+.flora-section-title span {
+  font-style: italic;
+  font-weight: 400;
+  color: #91AD91;
+}
+
+.flora-section-desc {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #ADB9AE;
+}
+
+/* ==========================================================================
+   SECTION A: LIVING SPECIES REGISTRY
+   ========================================================================== */
+.flora-species-tabs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 14px;
+  margin-bottom: 32px;
+}
+
+.flora-species-tab-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: rgba(18, 30, 22, 0.6);
+  border: 1px solid rgba(177, 203, 177, 0.16);
+  border-radius: 10px;
+  padding: 10px 18px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.flora-species-tab-btn:hover {
+  background: rgba(28, 48, 34, 0.75);
+  border-color: rgba(177, 203, 177, 0.35);
+}
+
+.flora-species-tab-btn.active {
+  background: rgba(38, 64, 46, 0.9);
+  border-color: #52c77a;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.flora-tab-common {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #EEF2EB;
+}
+
+.flora-tab-sci {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-style: italic;
+  font-size: 11px;
+  color: #849287;
+}
+
+.flora-species-tab-btn.active .flora-tab-sci {
+  color: #a3d9a5;
+}
+
+/* Spotlight Card */
+.flora-species-spotlight {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 36px;
+  background: rgba(15, 27, 20, 0.78);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(177, 203, 177, 0.2);
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+}
+
+.flora-spotlight-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.flora-pill-family {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  background: rgba(66, 107, 80, 0.3);
+  border: 1px solid rgba(145, 173, 145, 0.3);
+  color: #a3d9a5;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.flora-pill-variety {
+  font-size: 11px;
+  color: #94A095;
+}
+
+.flora-spotlight-title {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-size: 32px;
+  font-weight: 600;
+  color: #EEF2EB;
+  margin-bottom: 4px;
+}
+
+.flora-spotlight-latin {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-style: italic;
+  font-size: 16px;
+  color: #91AD91;
+  margin-bottom: 16px;
+}
+
+.flora-spotlight-desc {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #C5CEC3;
+  margin-bottom: 28px;
+}
+
+.flora-spotlight-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+  background: rgba(8, 15, 11, 0.5);
+  border: 1px solid rgba(177, 203, 177, 0.12);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.flora-spotlight-metric {
+  display: flex;
+  flex-direction: column;
+}
+
+.flora-metric-label {
+  font-size: 11px;
+  color: #849287;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 3px;
+}
+
+.flora-metric-val {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #EEF2EB;
+  text-transform: capitalize;
+}
+
+/* Environmental Envelope (Right of spotlight) */
+.flora-spotlight-right {
+  background: rgba(10, 18, 13, 0.65);
+  border: 1px solid rgba(177, 203, 177, 0.14);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.flora-envelope-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #91AD91;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-bottom: 20px;
+}
+
+.flora-envelope-item {
+  margin-bottom: 20px;
+}
+
+.flora-envelope-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.flora-env-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: #C5CEC3;
+}
+
+.flora-env-range {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #EEF2EB;
+}
+
+.flora-env-bar-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.flora-env-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.flora-envelope-note {
+  border-top: 1px solid rgba(177, 203, 177, 0.12);
+  padding-top: 14px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #849287;
+}
+
+/* ==========================================================================
+   SECTION B: BIOPHYSICAL MICROCLIMATE SANDBOX
+   ========================================================================== */
+.flora-env-sandbox-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 32px;
+}
+
+.flora-env-controls-box,
+.flora-env-output-box {
+  background: rgba(15, 27, 20, 0.78);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(177, 203, 177, 0.2);
+  border-radius: 20px;
+  padding: 32px;
+}
+
+.flora-box-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.flora-box-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #EEF2EB;
+}
+
+.flora-box-sub {
+  font-size: 11.5px;
+  color: #849287;
+}
+
+.flora-slider-group {
+  margin-bottom: 20px;
+}
+
+.flora-slider-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.flora-slider-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #C5CEC3;
+}
+
+.flora-slider-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: #EEF2EB;
+}
+
+.flora-slider {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  outline: none;
+}
+
+.flora-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #52c77a;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(82, 199, 122, 0.4);
+  transition: transform 0.15s ease;
+}
+
+.flora-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Status Badge */
+.flora-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.flora-status-badge.optimal {
+  background: rgba(94, 158, 114, 0.2);
+  border: 1px solid rgba(94, 158, 114, 0.45);
+  color: #52c77a;
+}
+
+.flora-status-badge.warning {
+  background: rgba(212, 163, 89, 0.2);
+  border: 1px solid rgba(212, 163, 89, 0.45);
+  color: #d4a359;
+}
+
+.flora-status-badge.severe {
+  background: rgba(199, 106, 106, 0.2);
+  border: 1px solid rgba(199, 106, 106, 0.45);
+  color: #c76a6a;
+}
+
+/* Meters Row */
+.flora-meters-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.flora-meter-card {
+  background: rgba(8, 15, 11, 0.6);
+  border: 1px solid rgba(177, 203, 177, 0.14);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.flora-meter-label {
+  font-size: 11px;
+  color: #849287;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.flora-meter-number {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.flora-meter-number small {
+  font-size: 10px;
+  font-family: var(--font-sans);
+  font-weight: normal;
+  color: #94A095;
+}
+
+.flora-meter-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.flora-meter-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.flora-telemetry-explanation {
+  background: rgba(10, 18, 13, 0.6);
+  border: 1px solid rgba(177, 203, 177, 0.12);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 20px;
+}
+
+.flora-explanation-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #C5CEC3;
+}
+
+.flora-env-cards-subgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.flora-subcard {
+  background: rgba(8, 15, 11, 0.4);
+  border: 1px solid rgba(177, 203, 177, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.flora-subcard h4 {
+  font-size: 12.5px;
+  color: #EEF2EB;
+  margin-bottom: 4px;
+}
+
+.flora-subcard p {
+  font-size: 11.5px;
+  color: #849287;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   SECTION C: 12 PHENOLOGICAL MILESTONES
+   ========================================================================== */
+.flora-stages-track-container {
+  overflow-x: auto;
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+}
+
+.flora-stages-track {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 900px;
+  position: relative;
+}
+
+.flora-stages-track::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 20px;
+  right: 20px;
+  height: 2px;
+  background: rgba(177, 203, 177, 0.15);
+  z-index: 1;
+}
+
+.flora-stage-node {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex: 1;
+}
+
+.flora-node-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #14221a;
+  border: 2px solid rgba(177, 203, 177, 0.35);
+  transition: all 0.2s ease;
+}
+
+.flora-stage-node:hover .flora-node-dot {
+  border-color: #52c77a;
+  background: #233b2c;
+  transform: scale(1.15);
+}
+
+.flora-stage-node.active .flora-node-dot {
+  background: #52c77a;
+  border-color: #a3d9a5;
+  box-shadow: 0 0 10px #52c77a;
+  transform: scale(1.25);
+}
+
+.flora-node-num {
+  font-size: 11px;
+  font-weight: 600;
+  color: #849287;
+}
+
+.flora-stage-node.active .flora-node-num {
+  color: #52c77a;
+}
+
+.flora-node-name {
+  font-size: 11px;
+  color: #ADB9AE;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.flora-stage-node.active .flora-node-name {
+  color: #EEF2EB;
+  font-weight: 600;
+}
+
+/* Spotlight Card for Stages */
+.flora-stage-spotlight-card {
+  background: rgba(15, 27, 20, 0.78);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(177, 203, 177, 0.2);
+  border-radius: 20px;
+  padding: 36px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+.flora-stage-spotlight-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.flora-stage-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #a3d9a5;
+}
+
+.flora-dot-sep {
+  color: rgba(177, 203, 177, 0.4);
+}
+
+.flora-stage-phase {
+  color: #91AD91;
+}
+
+.flora-stage-days {
+  font-size: 13px;
+  font-weight: 600;
+  color: #d4a359;
+  background: rgba(212, 163, 89, 0.12);
+  border: 1px solid rgba(212, 163, 89, 0.25);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.flora-stage-title {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-size: 28px;
+  font-weight: 600;
+  color: #EEF2EB;
+  margin-bottom: 10px;
+}
+
+.flora-stage-desc {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #C5CEC3;
+  margin-bottom: 22px;
+  max-width: 800px;
+}
+
+.flora-stage-anatomy-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(8, 15, 11, 0.5);
+  border: 1px solid rgba(177, 203, 177, 0.12);
+  border-radius: 10px;
+  padding: 12px 18px;
+  margin-bottom: 28px;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.flora-anatomy-tag {
+  color: #91AD91;
+  font-weight: 600;
+}
+
+.flora-anatomy-val {
+  color: #EEF2EB;
+}
+
+.flora-stage-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.flora-stage-prev-next {
+  display: flex;
+  gap: 10px;
+}
+
+.flora-stage-nav-btn {
+  background: rgba(25, 42, 31, 0.65);
+  border: 1px solid rgba(177, 203, 177, 0.2);
+  color: #C5CEC3;
+  font-size: 12.5px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.flora-stage-nav-btn:hover:not(:disabled) {
+  background: rgba(35, 58, 43, 0.85);
+  color: #EEF2EB;
+  border-color: rgba(177, 203, 177, 0.4);
+}
+
+.flora-stage-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   SECTION D: SCIENTIFIC WORKSPACES GRID & GRAND CTA
+   ========================================================================== */
+.flora-workspaces-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 64px;
+}
+
+.flora-workspace-card {
+  background: rgba(15, 27, 20, 0.72);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(177, 203, 177, 0.18);
+  border-radius: 16px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.flora-workspace-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(145, 173, 145, 0.45);
+}
+
+.flora-ws-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(66, 107, 80, 0.35);
+  border: 1px solid rgba(145, 173, 145, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a3d9a5;
+  margin-bottom: 20px;
+}
+
+.flora-ws-title {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-size: 20px;
+  font-weight: 600;
+  color: #EEF2EB;
+  margin-bottom: 10px;
+}
+
+.flora-ws-desc {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #ADB9AE;
+  margin-bottom: 20px;
+  flex-grow: 1;
+}
+
+.flora-ws-bullets {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid rgba(177, 203, 177, 0.1);
+  padding-top: 16px;
+}
+
+.flora-ws-bullets li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: #C5CEC3;
+}
+
+/* Grand CTA Banner */
+.flora-grand-cta-banner {
+  position: relative;
+  background: linear-gradient(135deg, rgba(20, 38, 28, 0.9), rgba(12, 22, 16, 0.95));
+  border: 1px solid rgba(145, 173, 145, 0.3);
+  border-radius: 24px;
+  padding: 60px 48px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.flora-cta-glow-backdrop {
+  position: absolute;
+  top: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(82, 199, 122, 0.22) 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.flora-cta-content {
+  position: relative;
+  z-index: 2;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.flora-cta-eyebrow {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #52c77a;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.flora-cta-title {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-size: clamp(32px, 3.8vw, 44px);
+  font-weight: 600;
+  line-height: 1.15;
+  color: #EEF2EB;
+  margin-bottom: 16px;
+}
+
+.flora-cta-desc {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #C5CEC3;
+  margin-bottom: 32px;
+}
+
+.flora-cta-btn-row {
+  display: flex;
+  justify-content: center;
+}
+
+/* ==========================================================================
+   LANDING FOOTER
+   ========================================================================== */
+.flora-landing-footer {
+  border-top: 1px solid rgba(177, 203, 177, 0.14);
+  background: rgba(6, 11, 8, 0.88);
+  padding: 64px 32px 32px;
+}
+
+.flora-footer-inner {
+  max-width: 1380px;
+  margin: 0 auto;
+}
+
+.flora-footer-top {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1.2fr;
+  gap: 40px;
+  margin-bottom: 48px;
+}
+
+.flora-footer-brand {
+  display: flex;
+  flex-direction: column;
+}
+
+.flora-footer-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.flora-footer-title {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #EEF2EB;
+}
+
+.flora-footer-tagline {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #849287;
+  margin-bottom: 20px;
+  max-width: 320px;
+}
+
+.flora-footer-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.flora-footer-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #94A095;
+}
+
+.flora-footer-links-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.flora-footer-col-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #EEF2EB;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.flora-footer-link {
+  background: none;
+  border: none;
+  color: #849287;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.flora-footer-link:hover {
+  color: #52c77a;
+}
+
+.flora-footer-action-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.flora-footer-back-to-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid rgba(177, 203, 177, 0.16);
+  color: #ADB9AE;
+  font-size: 12.5px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.flora-footer-back-to-top:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #EEF2EB;
+  border-color: rgba(177, 203, 177, 0.35);
+}
+
+.flora-footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(177, 203, 177, 0.1);
+  padding-top: 24px;
+  font-size: 12px;
+  color: #6d7a70;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (1920 down to 390px)
+   ========================================================================== */
+
+@media (max-width: 1200px) {
+  .flora-landing-nav-links {
+    gap: 18px;
+  }
+  .flora-hero-content-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .flora-footer-top {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+}
+
+@media (max-width: 992px) {
+  .flora-landing-nav-links {
+    display: none;
+  }
+  .flora-landing-mobile-toggle {
+    display: block;
+  }
+  .flora-landing-mobile-drawer {
+    display: flex;
+    flex-direction: column;
+    background: rgba(10, 18, 13, 0.96);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(177, 203, 177, 0.18);
+    padding: 20px 32px;
+    gap: 16px;
+  }
+  .flora-landing-mobile-link {
+    background: none;
+    border: none;
+    color: #C5CEC3;
+    font-size: 15px;
+    font-weight: 500;
+    text-align: left;
+    padding: 8px 0;
+    cursor: pointer;
+  }
+  .flora-landing-mobile-link:hover {
+    color: #52c77a;
+  }
+  .flora-landing-mobile-cta {
+    padding-top: 12px;
+    border-top: 1px solid rgba(177, 203, 177, 0.15);
+  }
+
+  .flora-hero-content-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .flora-hero-stage-col {
+    height: 480px;
+  }
+
+  .flora-species-spotlight {
+    grid-template-columns: 1fr;
+  }
+
+  .flora-env-sandbox-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .flora-landing-hero {
+    padding: 24px 20px 40px;
+  }
+  .flora-landing-section {
+    padding: 60px 20px;
+  }
+  .flora-hero-stage-col {
+    height: 400px;
+  }
+  .flora-meters-row {
+    grid-template-columns: 1fr;
+  }
+  .flora-stage-spotlight-card {
+    padding: 24px;
+  }
+  .flora-grand-cta-banner {
+    padding: 40px 20px;
+  }
+  .flora-footer-top {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .flora-footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .flora-landing-nav {
+    padding: 12px 16px;
+  }
+  .flora-landing-brand-title {
+    font-size: 17px;
+  }
+  .flora-landing-brand-sub {
+    display: none;
+  }
+  .flora-landing-btn-primary {
+    padding: 8px 14px;
+    font-size: 12.5px;
+  }
+  .flora-hero-headline {
+    font-size: 32px;
+    line-height: 1.15;
+  }
+  .flora-hero-lead {
+    font-size: 14.5px;
+    line-height: 1.5;
+  }
+  .flora-landing-hero {
+    padding: 16px 16px 32px;
+  }
+  .flora-landing-section {
+    padding: 48px 16px;
+  }
+  .flora-species-spotlight,
+  .flora-env-controls-box,
+  .flora-env-output-box,
+  .flora-stage-spotlight-card {
+    padding: 20px 16px;
+  }
+  .flora-spotlight-title {
+    font-size: 24px;
+  }
+  .flora-stage-title {
+    font-size: 22px;
+  }
+  .flora-cta-title {
+    font-size: 26px;
+  }
+  .flora-hero-stage-col {
+    height: 340px;
+  }
+  .flora-hero-actions-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .flora-landing-btn-primary.large,
+  .flora-landing-btn-ghost {
+    width: 100%;
+    justify-content: center;
+  }
+  .flora-hero-stats-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .flora-stat-sep {
+    display: none;
+  }
+  .flora-spotlight-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .flora-scroll-chevron {
+    animation: none;
+  }
+}
