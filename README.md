@@ -1,6 +1,6 @@
-# FLORA — Botanical 3D Plant Growth Simulator
+# FLORA - Botanical 3D Plant Growth Simulator
 
-FLORA is an interactive 3D botanical simulation and research workbench built with React, Three.js, React Three Fiber, and a deterministic discrete-time plant physiology engine. It enables botanical researchers, educators, and students to simulate, visualize, inspect, and analyze plant morphogenesis across multiple species (*Solanum lycopersicum* / Tomato and *Helianthus annuus* / Sunflower) under dynamically varying environmental conditions.
+FLORA is an interactive 3D botanical simulation & research workbench built with React, Three.js, React Three Fiber, and a deterministic discrete-time plant physiology engine. It enables botanical researchers, educators, and students to simulate, visualize, inspect, and analyze plant morphogenesis across multiple species (*Solanum lycopersicum* / Tomato and *Helianthus annuus* / Sunflower) under dynamically varying environmental conditions.
 
 ---
 
