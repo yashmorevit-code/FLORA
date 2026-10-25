@@ -291,7 +291,7 @@ export function generateBotanicalExplanation(state, env, speciesConfig = null) {
  * - When overallProgress = 1.0 (Full Maturity): Age, health, stresses, fruit/seed ripening, and homeostasis CONTINUE updating.
  * - Morphological bounds (height, depth, spread) remain firmly capped at configured adult biological limits.
  */
-export function stepSimulation(prevState, env, dt) {
+export function stepSimulation(prevState, env, dt, explicitProgress = null, explicitAgeDays = null) {
   // Retrieve species-specific biological configuration (safe fallback to tomato)
   const speciesConfig = getSpeciesConfig(prevState?.speciesId);
 
@@ -350,7 +350,9 @@ export function stepSimulation(prevState, env, dt) {
 
   // 2. Simulated plant age progression with strict terminal clamp
   const dayRate = totalMaturityDays / nominalSeasonDuration;
-  const proposedAgeDays = (prevState.ageDays || 0.0) + dt * dayRate;
+  const proposedAgeDays = (explicitAgeDays !== null && explicitAgeDays !== undefined)
+    ? explicitAgeDays
+    : ((prevState.ageDays || 0.0) + dt * dayRate);
 
   let isTerminal = false;
   let senescenceProgress = 0.0;
@@ -391,9 +393,14 @@ export function stepSimulation(prevState, env, dt) {
   }
 
   // 4. Progress advance according to species lifecycle configuration
-  const baseGrowthStep = (1.0 / nominalSeasonDuration) * dt;
-  const progressIncrement = isTerminal ? 0 : baseGrowthStep * growthRate;
-  const overallProgress = Math.min(1.0, (prevState.overallProgress || 0.0) + progressIncrement);
+  let overallProgress;
+  if (explicitProgress !== null && explicitProgress !== undefined) {
+    overallProgress = Math.min(1.0, Math.max(0.0, explicitProgress));
+  } else {
+    const baseGrowthStep = (1.0 / nominalSeasonDuration) * dt;
+    const progressIncrement = isTerminal ? 0 : baseGrowthStep * growthRate;
+    overallProgress = Math.min(1.0, (prevState.overallProgress || 0.0) + progressIncrement);
+  }
 
   // 5. Determine active developmental stage from species stage configuration and age
   const { stageConfig: activeStageConfig, stageIndex, stage, stageProgress } = getActiveStage(

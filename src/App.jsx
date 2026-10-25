@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Sprout, Compass, ShieldCheck, SlidersHorizontal, Activity } from 'lucide-react';
+import { Sprout, Compass, ShieldCheck, SlidersHorizontal, Activity, Headphones } from 'lucide-react';
 import { INITIAL_ENVIRONMENT, INITIAL_PLANT_STATE } from './simulation/types.js';
 import { stepSimulation } from './simulation/engine.js';
 import { recordHistorySample, createHistorySnapshot } from './simulation/history.js';
@@ -17,7 +17,9 @@ import { CompareWorkspace } from './components/CompareWorkspace.jsx';
 import { SpeciesWorkspace } from './components/SpeciesWorkspace.jsx';
 import { PlaceholderWorkspace } from './components/PlaceholderWorkspace.jsx';
 import { LandingPage } from './components/landing/LandingPage.jsx';
+import { BotanicalGuidePanel } from './components/BotanicalGuidePanel.jsx';
 import { normalizeSpeciesId, getSpeciesConfig, SPECIES_IDS } from './simulation/species.js';
+import { audioController } from './simulation/audioController.js';
 
 export default function App() {
   // Top-level Application Route ('landing' | 'simulator')
@@ -130,6 +132,7 @@ export default function App() {
   const showAnnotations = annotationMode !== 'hidden';
   const [showControlsPanel, setShowControlsPanel] = useState(true);
   const [showStatusPanel, setShowStatusPanel] = useState(true);
+  const [showBotanicalGuide, setShowBotanicalGuide] = useState(true);
   const [focusToken, setFocusToken] = useState(0);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
@@ -143,6 +146,9 @@ export default function App() {
 
   // Selected plant part for interactive botanical inspection
   const [selectedPart, setSelectedPart] = useState(null);
+
+  // Authoritative Audio Controller state synchronization
+  const [audioState, setAudioState] = useState(() => audioController.getState());
 
   // References for deterministic requestAnimationFrame loop
   const isPlayingRef = useRef(isPlaying);
@@ -160,9 +166,9 @@ export default function App() {
   const lastTimeRef = useRef(performance.now());
 
   // Fixed/delta time simulation update step with automatic historical sampling
-  const tickSimulation = useCallback((dt, forceSample = false) => {
+  const tickSimulation = useCallback((dt, forceSample = false, explicitProgress = null, explicitAgeDays = null) => {
     setPlantState((prev) => {
-      const next = stepSimulation(prev, envRef.current, dt);
+      const next = stepSimulation(prev, envRef.current, dt, explicitProgress, explicitAgeDays);
 
       // Record historical sample when simulation advances
       setHistory((prevHistory) =>
@@ -173,6 +179,24 @@ export default function App() {
     });
   }, []);
 
+  // Synchronize with audioController state changes and scrub updates
+  useEffect(() => {
+    const unsubscribe = audioController.subscribe((newState) => {
+      setAudioState(newState);
+      if (newState.mode === 'guided') {
+        setIsPlaying(newState.isPlaying);
+
+        // When paused and user scrubs the narration slider, immediately update the 3D plant to the scrubbed fraction
+        if (!newState.isPlaying && !newState.isLoading && newState.duration > 0 && appRoute === 'simulator') {
+          const speciesCfg = getSpeciesConfig(plantStateRef.current.speciesId);
+          const { overallProgress, ageDays } = audioController.getGuidedProgress(speciesCfg);
+          tickSimulation(0.0001, true, overallProgress, ageDays);
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, [tickSimulation, appRoute]);
+
   useEffect(() => {
     if (appRoute !== 'simulator') return;
     let animId;
@@ -181,9 +205,21 @@ export default function App() {
       const realDt = Math.min(0.1, (currentTime - lastTimeRef.current) / 1000);
       lastTimeRef.current = currentTime;
 
-      if (isPlayingRef.current) {
-        const effectiveDt = realDt * speedRef.current;
-        tickSimulation(effectiveDt, false);
+      const isGuided = audioController.isGuidedActive();
+
+      if (isGuided) {
+        // Guided Mode: Narration is the master pace controller
+        if (audioController.state.isPlaying || audioController.state.isCompleted) {
+          const speciesCfg = getSpeciesConfig(plantStateRef.current.speciesId);
+          const { overallProgress, ageDays } = audioController.getGuidedProgress(speciesCfg);
+          tickSimulation(realDt, false, overallProgress, ageDays);
+        }
+      } else {
+        // Free Simulation Mode: Independent clock-driven simulation speed
+        if (isPlayingRef.current) {
+          const effectiveDt = realDt * speedRef.current;
+          tickSimulation(effectiveDt, false);
+        }
       }
 
       animId = requestAnimationFrame(loop);
@@ -195,12 +231,30 @@ export default function App() {
 
   // Handler functions
   const handlePlayPause = () => {
-    setIsPlaying((prev) => !prev);
+    if (audioController.isGuidedActive()) {
+      if (audioController.state.isPlaying) {
+        audioController.pause();
+        setIsPlaying(false);
+      } else {
+        audioController.play();
+        setIsPlaying(true);
+      }
+    } else {
+      setIsPlaying((prev) => !prev);
+    }
+  };
+
+  const handleChangeSpeed = (newSpeed) => {
+    setSpeed(newSpeed);
+    speedRef.current = newSpeed;
+    const variant = (newSpeed === 2) ? '2x' : (newSpeed === 5) ? '5x' : '1x';
+    audioController.setSpeedVariant(variant);
   };
 
   const handleReset = () => {
     setIsPlaying(false);
     const currentSpecies = plantState.speciesId || SPECIES_IDS.TOMATO;
+    audioController.reset(currentSpecies);
     const resetState = {
       ...INITIAL_PLANT_STATE,
       speciesId: currentSpecies,
@@ -216,8 +270,17 @@ export default function App() {
 
   const handleStepForward = () => {
     if (plantState.isTerminal) return;
-    setIsPlaying(false);
-    tickSimulation(1.5, true);
+    if (audioController.isGuidedActive()) {
+      setIsPlaying(false);
+      audioController.pause();
+      audioController.stepForward();
+      const speciesCfg = getSpeciesConfig(plantState.speciesId);
+      const { overallProgress, ageDays } = audioController.getGuidedProgress(speciesCfg);
+      tickSimulation(0.001, true, overallProgress, ageDays);
+    } else {
+      setIsPlaying(false);
+      tickSimulation(1.5, true);
+    }
   };
 
   const handleSelectPart = (part) => {
@@ -236,14 +299,33 @@ export default function App() {
     handleSelectCameraPreset('overview');
   };
 
-  const handleSelectStage = (minProgress, minDay) => {
+  const handleSelectStage = (minProgress, minDay, stageId = null) => {
+    const speciesId = plantStateRef.current.speciesId || 'tomato';
+    const speciesCfg = getSpeciesConfig(speciesId);
+    const targetAge = typeof minDay === 'number'
+      ? minDay
+      : minProgress * (speciesCfg.lifecycle?.totalMaturityDays || 100);
+
+    let targetStageId = stageId;
+    if (!targetStageId && speciesCfg.stageConfigs) {
+      const match = speciesCfg.stageConfigs.find((s) => minProgress >= s.minProgress && minProgress < s.maxProgress)
+        || speciesCfg.stageConfigs[0];
+      targetStageId = match?.stage || 'SEED';
+    }
+
+    if (audioController.isGuidedActive()) {
+      audioController.loadTrack(
+        speciesId,
+        targetStageId,
+        isPlayingRef.current,
+        audioController.state.speedVariant,
+        0
+      );
+    }
+
     setPlantState((prev) => {
-      const speciesCfg = getSpeciesConfig(prev.speciesId);
-      const targetAge = typeof minDay === 'number'
-        ? minDay
-        : minProgress * (speciesCfg.lifecycle?.totalMaturityDays || 100);
       const next = { ...prev, overallProgress: minProgress, ageDays: targetAge };
-      const computed = stepSimulation(next, envRef.current, 0.001);
+      const computed = stepSimulation(next, envRef.current, 0.001, minProgress, targetAge);
       setHistory((prevH) => recordHistorySample(prevH, computed, envRef.current, 0.01, true));
       return computed;
     });
@@ -270,6 +352,8 @@ export default function App() {
   const handleSelectSpecies = (newSpeciesId) => {
     const normalized = normalizeSpeciesId(newSpeciesId);
     setIsPlaying(false);
+    audioController.stop();
+    audioController.loadTrack(normalized, 'SEED', false);
     setActiveExperiment(null);
     setSelectedPart(null);
 
@@ -344,10 +428,24 @@ export default function App() {
 
   // Returns to the landing page showcase
   const handleReturnToLanding = () => {
+    audioController.stop();
     setAppRoute('landing');
     try {
       window.history.pushState(null, '', '/');
     } catch (e) {}
+  };
+
+  // Guide & Panel toggle handlers
+  const handleToggleGuide = () => {
+    setShowBotanicalGuide((prev) => !prev);
+  };
+
+  const handleToggleStatusPanel = () => {
+    setShowStatusPanel((prev) => !prev);
+  };
+
+  const handleCloseGuide = () => {
+    setShowBotanicalGuide(false);
   };
 
   // Render cinematic landing page when on root route
@@ -356,7 +454,9 @@ export default function App() {
   }
 
   return (
-    <div className="flora-app">
+    <div
+      className={`flora-app ${showBotanicalGuide ? 'has-guide-open' : ''} ${showControlsPanel ? 'has-controls-open' : ''} ${showStatusPanel ? 'has-vitals-open' : ''}`}
+    >
       {/* Top Header Bar */}
       <header className="flora-header">
         <div className="flora-branding">
@@ -375,7 +475,7 @@ export default function App() {
             title="Click to switch or view Botanical Species Registry"
           >
             <h1>FLORA</h1>
-            <span>
+            <span className="flora-branding-subtitle">
               Botanical Plant Growth Simulator &bull;{' '}
               <strong style={{ color: 'var(--color-primary-green-light)', textDecoration: 'underline' }}>
                 {(() => {
@@ -396,20 +496,7 @@ export default function App() {
         <div className="flora-top-status">
           <button
             type="button"
-            className="flora-btn"
-            style={{
-              padding: '5px 12px',
-              fontSize: '12px',
-              fontWeight: 500,
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(177, 203, 177, 0.22)',
-              borderRadius: '7px',
-              color: '#C5CEC3',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
+            className="flora-btn flora-overview-btn"
             onClick={handleReturnToLanding}
             title="Return to the Flora Landing Showcase"
           >
@@ -430,12 +517,22 @@ export default function App() {
               <button
                 type="button"
                 className={`panel-toggle-btn ${showStatusPanel ? 'active' : ''}`}
-                onClick={() => setShowStatusPanel((prev) => !prev)}
+                onClick={handleToggleStatusPanel}
                 title={showStatusPanel ? 'Hide Plant Vital Signs panel' : 'Show Plant Vital Signs panel'}
                 aria-pressed={showStatusPanel}
               >
                 <Activity size={13} />
                 <span>Vitals</span>
+              </button>
+              <button
+                type="button"
+                className={`panel-toggle-btn ${showBotanicalGuide ? 'active' : ''}`}
+                onClick={handleToggleGuide}
+                title={showBotanicalGuide ? 'Hide Botanical Storytelling Guide' : 'Open Botanical Storytelling Guide'}
+                aria-pressed={showBotanicalGuide}
+              >
+                <Headphones size={13} />
+                <span>Guide</span>
               </button>
             </div>
           )}
@@ -525,7 +622,7 @@ export default function App() {
             />
           )}
 
-          {/* Floating Interactive 12-Stage Timeline (Bottom) */}
+          {/* Floating Interactive 12-Stage Timeline with Anchored Botanical Guide */}
           <TimelineBar
             plantState={plantState}
             isPlaying={isPlaying}
@@ -533,8 +630,11 @@ export default function App() {
             onPlayPause={handlePlayPause}
             onReset={handleReset}
             onStepForward={handleStepForward}
-            onChangeSpeed={setSpeed}
+            onChangeSpeed={handleChangeSpeed}
             onSelectStage={handleSelectStage}
+            showBotanicalGuide={showBotanicalGuide}
+            onToggleBotanicalGuide={handleToggleGuide}
+            onInspectOrgan={handleSelectPart}
           />
 
           {/* Interactive Part Inspection Card */}

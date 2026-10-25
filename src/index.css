@@ -94,7 +94,9 @@ body, html, #root {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   pointer-events: none;
+  min-width: 0;
 }
 
 .flora-branding {
@@ -111,7 +113,8 @@ body, html, #root {
   box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.55);
   transition: border-color 0.2s ease, background 0.2s ease;
   white-space: nowrap;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .flora-branding:hover {
@@ -135,6 +138,7 @@ body, html, #root {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .flora-title-group h1 {
@@ -146,7 +150,8 @@ body, html, #root {
   line-height: 1.1;
 }
 
-.flora-title-group span {
+.flora-title-group span,
+.flora-branding-subtitle {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -164,6 +169,32 @@ body, html, #root {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.flora-overview-btn {
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+  background: var(--flora-bg-surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--flora-border-subtle);
+  border-radius: 9999px;
+  color: var(--flora-text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 10px 24px -5px rgba(0, 0, 0, 0.45);
+  transition: all 0.2s ease;
+}
+
+.flora-overview-btn:hover {
+  color: var(--flora-text-primary);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--flora-border-medium);
 }
 
 .panel-toggles-group {
@@ -910,6 +941,13 @@ body, html, #root {
   gap: 14px;
 }
 
+.timeline-controls-cluster {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
 .playback-button-group {
   display: flex;
   align-items: center;
@@ -962,6 +1000,265 @@ body, html, #root {
   background: rgba(66, 107, 80, 0.45);
   border-color: var(--flora-soft-sage);
   color: var(--flora-text-primary);
+}
+
+/* Speed Multipliers & Botanical Guide Anchor Container */
+.speed-and-guide-anchor {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Botanical Guide Launcher Button beside speed controls */
+.guide-launcher-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--flora-border-subtle);
+  color: var(--flora-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-left: 6px;
+}
+
+.guide-launcher-btn:hover {
+  background: rgba(70, 184, 108, 0.16);
+  border-color: rgba(70, 184, 108, 0.45);
+  color: #7BE29F;
+  transform: translateY(-1px);
+}
+
+.guide-launcher-btn.active {
+  background: rgba(70, 184, 108, 0.28);
+  border-color: #46B86C;
+  color: #7BE29F;
+  box-shadow: 0 0 14px rgba(70, 184, 108, 0.35);
+}
+
+/* Master Timeline Mode Toggle (Guided vs Free Simulation) */
+.mode-toggle-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 36px;
+  padding: 0 11px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-left: 4px;
+}
+
+.mode-toggle-pill.guided {
+  background: rgba(70, 184, 108, 0.2);
+  border: 1px solid rgba(70, 184, 108, 0.5);
+  color: #7BE29F;
+  box-shadow: 0 0 10px rgba(70, 184, 108, 0.2);
+}
+
+.mode-toggle-pill.guided:hover {
+  background: rgba(70, 184, 108, 0.3);
+  border-color: #46B86C;
+}
+
+.mode-toggle-pill.free {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--flora-border-subtle);
+  color: var(--flora-text-secondary);
+}
+
+.mode-toggle-pill.free:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--flora-text-primary);
+}
+
+.narration-variant-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(82, 199, 122, 0.15);
+  border: 1px solid rgba(82, 199, 122, 0.35);
+  color: #52c77a;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.guided-sync-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--flora-text-secondary);
+}
+
+.sync-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #46b86c;
+  display: inline-block;
+}
+
+.sync-pulse-dot.pulsing {
+  animation: syncPulseAnim 1.8s infinite ease-in-out;
+}
+
+@keyframes syncPulseAnim {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.6;
+    box-shadow: 0 0 0 0 rgba(70, 184, 108, 0.7);
+  }
+  70% {
+    transform: scale(1.2);
+    opacity: 1;
+    box-shadow: 0 0 0 6px rgba(70, 184, 108, 0);
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.6;
+    box-shadow: 0 0 0 0 rgba(70, 184, 108, 0);
+  }
+}
+
+.status-highlight-cyan {
+  color: #64ffda;
+}
+
+/* Guide speed pills in header */
+.guide-speed-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 2px 3px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.guide-speed-pill {
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 4px;
+  background: transparent;
+  border: none;
+  color: var(--flora-text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.guide-speed-pill:hover {
+  color: var(--flora-text-primary);
+}
+
+.guide-speed-pill.active {
+  background: rgba(70, 184, 108, 0.25);
+  color: #7BE29F;
+  border: 1px solid rgba(70, 184, 108, 0.4);
+}
+
+/* Completion banner */
+.guide-completion-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba(70, 184, 108, 0.15);
+  border: 1px solid rgba(70, 184, 108, 0.4);
+  box-shadow: 0 0 16px rgba(70, 184, 108, 0.2);
+}
+
+.guide-completion-banner .completion-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.guide-completion-banner .completion-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+}
+
+.guide-completion-banner .completion-text strong {
+  color: #6CE895;
+  font-size: 12px;
+}
+
+.guide-completion-banner .completion-text span {
+  color: var(--flora-text-secondary);
+  font-size: 10.5px;
+}
+
+.guide-restart-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
+  background: rgba(70, 184, 108, 0.25);
+  border: 1px solid rgba(70, 184, 108, 0.5);
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.guide-restart-btn:hover {
+  background: rgba(70, 184, 108, 0.4);
+}
+
+/* Synchronized rhythm status banner */
+.guide-sync-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(70, 184, 108, 0.08);
+  border: 1px solid rgba(70, 184, 108, 0.25);
+  font-size: 11px;
+  color: #A2E8B8;
+}
+
+.guide-sync-status-banner .sync-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #46b86c;
+}
+
+.guide-sync-status-banner .sync-dot.active {
+  animation: syncPulseAnim 1.8s infinite ease-in-out;
+}
+
+/* Transcript variant tag */
+.transcript-variant-tag {
+  display: inline-block;
+  margin-bottom: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #7BE29F;
+  background: rgba(70, 184, 108, 0.12);
+  border: 1px solid rgba(70, 184, 108, 0.25);
+  padding: 2px 7px;
+  border-radius: 4px;
 }
 
 .timeline-status-group {
@@ -2793,18 +3090,37 @@ body, html, #root {
 }
 
 /* Responsive Layout Adaptations */
-@media (max-width: 1440px) {
-  .flora-title-group span {
+@media (max-width: 1680px) {
+  .flora-top-status .status-pill {
     display: none;
   }
+}
 
-  .flora-top-status .status-pill {
+@media (max-width: 1440px) {
+  .flora-title-group span,
+  .flora-branding-subtitle {
     display: none;
   }
 
   .flora-floating-panel,
   .flora-side-panel {
     width: 300px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .flora-nav-tab {
+    padding: 6px 12px;
+    font-size: 12.5px;
+  }
+}
+
+@media (max-width: 1080px) {
+  .flora-nav-tab .nav-tab-label {
+    display: none;
+  }
+  .flora-nav-tab {
+    padding: 6px 10px;
   }
 }
 
@@ -2863,5 +3179,728 @@ body, html, #root {
   }
 }
 
+@media (max-width: 640px) {
+  .flora-header {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    gap: 6px;
+  }
 
+  .panel-toggle-btn span {
+    display: none;
+  }
 
+  .panel-toggle-btn {
+    padding: 6px 9px;
+  }
+
+  .flora-overview-btn {
+    padding: 5px 9px;
+    font-size: 11px;
+  }
+
+  .flora-branding {
+    padding: 6px 12px 6px 10px;
+  }
+
+  .flora-title-group h1 {
+    font-size: 1rem;
+  }
+
+  .flora-logo-badge {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* ==========================================================================
+   FLORA BOTANICAL GUIDE — INTERACTIVE STORYTELLING & NARRATION CONSOLE
+   Anchored directly above the speed controls in the bottom control dock
+   ========================================================================== */
+
+.speed-and-guide-anchor .flora-botanical-guide-card {
+  position: absolute;
+  bottom: calc(100% + 14px);
+  left: 60px;
+  width: 460px;
+  max-width: min(500px, calc(100vw - 48px));
+  max-height: min(480px, calc(100vh - 220px));
+  z-index: 50;
+  background: rgba(13, 23, 17, 0.94);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(177, 203, 177, 0.28);
+  border-radius: 18px;
+  box-shadow: 0 24px 52px -12px rgba(0, 0, 0, 0.85), 0 0 24px rgba(70, 184, 108, 0.12);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  pointer-events: auto;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.speed-and-guide-anchor .flora-botanical-guide-card:hover {
+  border-color: rgba(177, 203, 177, 0.42);
+}
+
+.speed-and-guide-anchor .flora-botanical-guide-card.minimized {
+  max-height: 52px;
+  width: 380px;
+  border-radius: 26px;
+}
+
+/* Guide Audio Error Banner */
+.guide-error-banner {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.guide-error-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: #FCA5A5;
+}
+
+.guide-retry-btn {
+  background: rgba(239, 68, 68, 0.25);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  color: #FEE2E2;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.guide-retry-btn:hover {
+  background: rgba(239, 68, 68, 0.4);
+  color: #fff;
+}
+
+/* Guide Header */
+.guide-header {
+  padding: 12px 18px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(177, 203, 177, 0.12);
+  background: rgba(15, 26, 19, 0.65);
+}
+
+.guide-title-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.guide-icon-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(70, 184, 108, 0.15);
+  border: 1px solid rgba(70, 184, 108, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.guide-species-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--flora-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.guide-species-title span {
+  font-style: italic;
+  font-weight: 400;
+  font-size: 11.5px;
+  color: var(--flora-soft-sage);
+}
+
+.guide-meta-sub {
+  font-size: 10.5px;
+  color: var(--flora-text-muted);
+  letter-spacing: 0.02em;
+}
+
+.guide-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.guide-mode-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(177, 203, 177, 0.2);
+  color: var(--flora-text-secondary);
+  border-radius: 12px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.guide-mode-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.guide-mode-btn.active {
+  background: rgba(70, 184, 108, 0.22);
+  border-color: #46B86C;
+  color: #7BE29F;
+  box-shadow: 0 0 10px rgba(70, 184, 108, 0.25);
+}
+
+.guide-action-icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--flora-text-muted);
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.guide-action-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--flora-text-primary);
+}
+
+.guide-action-icon-btn.close-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #F87171;
+}
+
+/* Minimized Bar */
+.guide-minimized-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+}
+
+.mini-stage-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--flora-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+
+.mini-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Guide Body */
+.guide-body {
+  padding: 14px 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.guide-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.guide-body::-webkit-scrollbar-thumb {
+  background: rgba(177, 203, 177, 0.2);
+  border-radius: 4px;
+}
+
+/* Stage Headline Banner */
+.guide-stage-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stage-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stage-num {
+  font-size: 10px;
+  font-weight: 700;
+  color: #46B86C;
+  background: rgba(70, 184, 108, 0.15);
+  border: 1px solid rgba(70, 184, 108, 0.3);
+  padding: 2px 6px;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+}
+
+.stage-name-bold {
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.stage-summary-text {
+  font-size: 12px;
+  color: var(--flora-text-secondary);
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Audio Player Strip */
+.guide-player-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(177, 203, 177, 0.14);
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+.player-main-controls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.guide-play-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #3B7E50;
+  border: 1px solid #52B46E;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(59, 126, 80, 0.35);
+}
+
+.guide-play-btn:hover {
+  background: #46965E;
+  transform: scale(1.05);
+}
+
+.guide-play-btn.playing {
+  background: #46B86C;
+  border-color: #6CE895;
+  box-shadow: 0 0 16px rgba(70, 184, 108, 0.5);
+}
+
+.guide-play-btn.mini {
+  width: 26px;
+  height: 26px;
+}
+
+.audio-loading-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: flora-spin 0.8s linear infinite;
+}
+
+@keyframes flora-spin {
+  to { transform: rotate(360deg); }
+}
+
+.guide-nav-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: var(--flora-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.guide-nav-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+}
+
+.guide-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Scrubber */
+.player-scrubber-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.guide-timeline-scrub {
+  width: 100%;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+
+.guide-timeline-scrub::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #46B86C;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(70, 184, 108, 0.6);
+  transition: transform 0.15s ease;
+}
+
+.guide-timeline-scrub::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
+}
+
+.scrub-time-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--flora-text-muted);
+}
+
+/* Extra controls */
+.player-extra-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.guide-icon-toggle {
+  background: transparent;
+  border: none;
+  color: var(--flora-text-muted);
+  cursor: pointer;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+
+.guide-icon-toggle:hover {
+  color: var(--flora-text-primary);
+}
+
+.guide-volume-slider {
+  width: 48px;
+  height: 3px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.guide-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--flora-soft-sage);
+  cursor: pointer;
+}
+
+.guide-toggle-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(177, 203, 177, 0.2);
+  color: var(--flora-text-muted);
+  border-radius: 10px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: all 0.2s ease;
+}
+
+.guide-toggle-pill.active {
+  background: rgba(70, 184, 108, 0.2);
+  border-color: #46B86C;
+  color: #6CE895;
+}
+
+/* Audio Status Notice */
+.audio-status-notice {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+}
+
+.audio-status-notice.warning {
+  background: rgba(212, 163, 89, 0.12);
+  border: 1px solid rgba(212, 163, 89, 0.25);
+  color: #E2B773;
+}
+
+/* Organ Callout */
+.guide-organ-callout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(70, 184, 108, 0.08);
+  border: 1px solid rgba(70, 184, 108, 0.22);
+  border-radius: 10px;
+  padding: 6px 12px;
+}
+
+.organ-callout-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--flora-text-secondary);
+}
+
+.organ-callout-text strong {
+  color: #7BE29F;
+  letter-spacing: 0.04em;
+}
+
+.guide-inspect-btn {
+  background: rgba(70, 184, 108, 0.18);
+  border: 1px solid rgba(70, 184, 108, 0.35);
+  color: #E8EFE9;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 10.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.guide-inspect-btn:hover {
+  background: #3B7E50;
+  color: #FFFFFF;
+}
+
+/* Tab Strip */
+.guide-tab-strip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 1px solid rgba(177, 203, 177, 0.12);
+  padding-bottom: 4px;
+}
+
+.guide-tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--flora-text-muted);
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 5px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.guide-tab-btn:hover {
+  color: var(--flora-text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.guide-tab-btn.active {
+  color: #FFFFFF;
+  background: rgba(70, 184, 108, 0.15);
+  border: 1px solid rgba(70, 184, 108, 0.25);
+  font-weight: 600;
+}
+
+/* Tab Contents */
+.guide-tab-content {
+  font-size: 12.5px;
+  color: var(--flora-text-secondary);
+  line-height: 1.55;
+}
+
+.transcript-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.narration-script-text {
+  font-style: italic;
+  font-size: 13px;
+  color: #E8EFE9;
+  margin: 0;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px 14px;
+  border-radius: 10px;
+  border-left: 3px solid #46B86C;
+}
+
+.visual-changes-box {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(177, 203, 177, 0.08);
+}
+
+.visual-changes-box strong {
+  display: block;
+  font-size: 11px;
+  color: var(--flora-soft-sage);
+  margin-bottom: 2px;
+}
+
+.visual-changes-box p {
+  margin: 0;
+  font-size: 12px;
+}
+
+.biology-panel,
+.environment-panel-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.concept-card,
+.env-influence-box,
+.scientific-reference-box {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(177, 203, 177, 0.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.concept-header,
+.env-header-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.concept-header strong,
+.env-header-row strong {
+  font-size: 11.5px;
+  color: var(--flora-text-primary);
+}
+
+.concept-card p,
+.env-influence-box p {
+  margin: 0;
+  font-size: 12px;
+}
+
+.scientific-reference-box strong {
+  font-size: 11px;
+  color: var(--flora-text-muted);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.scientific-reference-box p {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--flora-soft-sage);
+}
+
+/* Responsive adjustments for anchored Botanical Guide */
+@media (max-width: 1100px) {
+  .speed-and-guide-anchor .flora-botanical-guide-card {
+    left: -10px;
+    width: 390px;
+    max-height: min(440px, calc(100vh - 210px));
+  }
+}
+
+@media (max-width: 860px) {
+  .speed-and-guide-anchor .flora-botanical-guide-card {
+    left: 0;
+    width: 400px;
+    max-width: calc(100vw - 32px);
+  }
+}
+
+@media (max-width: 768px) {
+  .flora-header {
+    top: 8px;
+    left: 10px;
+    right: 10px;
+    gap: 6px;
+  }
+
+  /* On small mobile/tablet viewports, tuck away side panels so Guide bottom-sheet has clear space */
+  .has-guide-open .flora-floating-panel,
+  .has-guide-open .flora-side-panel {
+    display: none;
+  }
+
+  .speed-and-guide-anchor .flora-botanical-guide-card {
+    position: fixed;
+    top: auto;
+    bottom: 140px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+    max-height: calc(100vh - 200px);
+    z-index: 50;
+  }
+
+  .speed-and-guide-anchor .flora-botanical-guide-card.minimized {
+    position: fixed;
+    top: auto;
+    bottom: 140px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    height: 48px;
+  }
+}
