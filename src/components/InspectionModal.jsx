@@ -15,6 +15,7 @@ import {
   Thermometer,
 } from 'lucide-react';
 import { getOrganDetails } from '../simulation/anatomyData.js';
+import { useTranslation } from '../i18n/index.jsx';
 
 /**
  * InspectionModal:
@@ -34,6 +35,7 @@ export function InspectionModal({
   onFocusOrgan,
   onReturnToOverview,
 }) {
+  const { t } = useTranslation();
   if (!part) return null;
 
   const details = getOrganDetails(part, plantState);
@@ -75,7 +77,7 @@ export function InspectionModal({
           title="Smoothly glide camera to focus on this organ in 3D"
         >
           <Compass size={13} color="#64ffda" />
-          Focus 3D View
+          {t('inspection.viewInScene')}
         </button>
         <button
           className="flora-btn overview-action-btn"
@@ -83,7 +85,7 @@ export function InspectionModal({
           title="Reset camera viewpoint to whole plant overview"
         >
           <Eye size={13} />
-          Return to Overview
+          {t('inspection.returnOverview')}
         </button>
       </div>
 
@@ -203,15 +205,15 @@ export function InspectionModal({
         <div className="inspection-footer-stats">
           <div className="footer-metric">
             <Heart size={12} color="#52c77a" />
-            <span>Health: <strong>{Math.round(plantState.health)}%</strong></span>
+            <span>{t('vitals.health')}: <strong>{Math.round(plantState.health)}%</strong></span>
           </div>
           <div className="footer-metric">
             <Activity size={12} color="#52c77a" />
-            <span>Vigour: <strong>{(plantState.growthRate * 100).toFixed(0)}%</strong></span>
+            <span>{t('vitals.growthVigour')}: <strong>{(plantState.growthRate * 100).toFixed(0)}%</strong></span>
           </div>
           <div className="footer-metric">
             <Sprout size={12} color="#52c77a" />
-            <span>Age: <strong>{(plantState.ageDays || 0).toFixed(1)} d</strong></span>
+            <span>{t('timeline.simulatedAge')}: <strong>{(plantState.ageDays || 0).toFixed(1)} d</strong></span>
           </div>
           {isSenescent && (
             <div className="footer-metric">

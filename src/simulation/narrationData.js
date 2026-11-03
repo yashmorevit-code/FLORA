@@ -1409,46 +1409,94 @@ export const SPECIES_NARRATIONS = {
   }
 };
 
+import multilingualData from './multilingualNarrations.json';
+
 /**
- * Helper to retrieve narration entry for a specific species and stage
+ * Helper to retrieve narration entry for a specific species and stage,
+ * localized for 'en' (default), 'hi' (Hindi), or 'mr' (Marathi).
  */
-export function getStageNarration(speciesId, stageId) {
+export function getStageNarration(speciesId, stageId, language = 'en') {
   if (!speciesId) speciesId = 'tomato';
   const normId = speciesId.toLowerCase();
+  const lang = (language === 'hi' || language === 'mr') ? language : 'en';
+
+  if (lang !== 'en' && multilingualData && multilingualData[normId]) {
+    const multiSpec = multilingualData[normId] || multilingualData.tomato;
+    const multiStage = multiSpec.stages.find((s) => s.stageId === stageId) || multiSpec.stages[0];
+    if (multiStage && multiStage[lang]) {
+      return {
+        stageId: multiStage.stageId,
+        stageIndex: multiStage.stageIndex,
+        highlightOrgan: multiStage.highlightOrgan,
+        nextStageId: multiStage.nextStageId,
+        references: multiStage.references,
+        title: multiStage[lang].title,
+        shortSummary: multiStage[lang].shortSummary,
+        script: multiStage[lang].script,
+        script2x: multiStage[lang].script2x,
+        script5x: multiStage[lang].script5x,
+        visualChanges: multiStage[lang].visualChanges,
+        biologicalProcess: multiStage[lang].biologicalProcess,
+        ecologicalSignificance: multiStage[lang].ecologicalSignificance,
+        environmentalInfluences: multiStage[lang].environmentalInfluences,
+        language: lang
+      };
+    }
+  }
+
   const spec = SPECIES_NARRATIONS[normId] || SPECIES_NARRATIONS.tomato;
-  
   if (!stageId) return spec.stages[0];
-  
   const found = spec.stages.find((s) => s.stageId === stageId);
   return found || spec.stages[0];
 }
 
 /**
- * Returns all stages for a species
+ * Returns all stages for a species, optionally localized for language ('en', 'hi', 'mr')
  */
-export function getAllNarrationsForSpecies(speciesId) {
+export function getAllNarrationsForSpecies(speciesId, language = 'en') {
   const normId = (speciesId || 'tomato').toLowerCase();
+  const lang = (language === 'hi' || language === 'mr') ? language : 'en';
+
+  if (lang !== 'en' && multilingualData && multilingualData[normId]) {
+    const multiSpec = multilingualData[normId] || multilingualData.tomato;
+    return multiSpec.stages.map((multiStage) => ({
+      stageId: multiStage.stageId,
+      stageIndex: multiStage.stageIndex,
+      highlightOrgan: multiStage.highlightOrgan,
+      nextStageId: multiStage.nextStageId,
+      references: multiStage.references,
+      ...(multiStage[lang] || {}),
+      language: lang
+    }));
+  }
+
   const spec = SPECIES_NARRATIONS[normId] || SPECIES_NARRATIONS.tomato;
   return spec.stages;
 }
 
 /**
- * Retrieves audio asset path for a species, stage, and speed variant ('1x' | '2x' | '5x')
+ * Retrieves audio asset path for a species, stage, speed variant ('1x' | '2x' | '5x'),
+ * and language ('en' | 'hi' | 'mr')
  */
-export function getNarrationAudioUrl(speciesId, stageId, speedVariant = '1x') {
+export function getNarrationAudioUrl(speciesId, stageId, speedVariant = '1x', language = 'en') {
   const normId = (speciesId || 'tomato').toLowerCase();
   const sId = stageId || 'SEED';
+  const lang = (language === 'hi' || language === 'mr') ? language : 'en';
   const base = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL)
     ? import.meta.env.BASE_URL.replace(/\/$/, '')
     : '';
 
+  let suffix = '';
   if (speedVariant === '2x' || speedVariant === 'concise') {
-    return `${base}/assets/audio/narration/${normId}/${sId}_2x.wav`;
+    suffix = '_2x';
+  } else if (speedVariant === '5x' || speedVariant === 'keypoints') {
+    suffix = '_5x';
   }
-  if (speedVariant === '5x' || speedVariant === 'keypoints') {
-    return `${base}/assets/audio/narration/${normId}/${sId}_5x.wav`;
+
+  if (lang === 'hi' || lang === 'mr') {
+    return `${base}/assets/audio/narration/${lang}/${normId}/${sId}${suffix}.wav`;
   }
-  return `${base}/assets/audio/narration/${normId}/${sId}.wav`;
+  return `${base}/assets/audio/narration/${normId}/${sId}${suffix}.wav`;
 }
 
 /**

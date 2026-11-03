@@ -2,8 +2,10 @@ import React from 'react';
 import { Activity, Sprout, ShieldAlert, Sparkles, AlertTriangle, BookOpen } from 'lucide-react';
 import { STAGE_CONFIGS, LifecyclePhases } from '../simulation/types.js';
 import { getSpeciesConfig } from '../simulation/species.js';
+import { useTranslation } from '../i18n/index.jsx';
 
 export function StatusPanel({ plantState, onReferenceVideoClick }) {
+  const { t } = useTranslation();
   const speciesCfg = getSpeciesConfig(plantState?.speciesId);
   const stages = speciesCfg?.stageConfigs || STAGE_CONFIGS;
   const currentStageConfig = stages[plantState.stageIndex] || stages[0];
@@ -76,9 +78,9 @@ export function StatusPanel({ plantState, onReferenceVideoClick }) {
         <div className="panel-title-group">
           <h2>
             <Activity size={16} className="panel-header-icon" />
-            Plant Vital Signs
+            {t('vitals.title')}
           </h2>
-          <span className="panel-subtitle">Physiology & Stress Monitor</span>
+          <span className="panel-subtitle">{t('vitals.subtitle')}</span>
         </div>
       </div>
 
@@ -88,7 +90,7 @@ export function StatusPanel({ plantState, onReferenceVideoClick }) {
           <div className="terminal-status-banner">
             <AlertTriangle size={15} className="banner-icon danger" />
             <div className="banner-text">
-              <strong>LIFECYCLE COMPLETE</strong>
+              <strong>{t('vitals.lifecycleComplete')}</strong>
               <span>Senescence finished at Day {Math.floor(plantState.ageDays)}</span>
             </div>
           </div>
@@ -126,21 +128,21 @@ export function StatusPanel({ plantState, onReferenceVideoClick }) {
         {/* Primary Metrics Grid */}
         <div className="metric-grid primary-metrics">
           <div className="metric-card">
-            <span className="metric-label">Overall Health</span>
+            <span className="metric-label">{t('vitals.health')}</span>
             <strong className="metric-value" style={{ color: getHealthColor(plantState.health) }}>
               {Math.round(plantState.health)}%
             </strong>
           </div>
           <div className="metric-card">
-            <span className="metric-label">Growth Vigour</span>
+            <span className="metric-label">{t('vitals.growthVigour')}</span>
             <strong className="metric-value">{(plantState.growthRate * 100).toFixed(0)}%</strong>
           </div>
           <div className="metric-card">
-            <span className="metric-label">Simulated Age</span>
+            <span className="metric-label">{t('vitals.simulatedAge')}</span>
             <strong className="metric-value">{plantState.ageDays.toFixed(1)} d</strong>
           </div>
           <div className="metric-card">
-            <span className="metric-label">Cycle Progress</span>
+            <span className="metric-label">{t('vitals.cycleProgress')}</span>
             <strong className="metric-value">{Math.round(plantState.overallProgress * 100)}%</strong>
           </div>
         </div>
@@ -148,16 +150,24 @@ export function StatusPanel({ plantState, onReferenceVideoClick }) {
         {/* Morphological Dimensions */}
         <div className="metric-grid morphological-metrics">
           <div className="metric-card">
-            <span className="metric-label">Stem Height</span>
-            <strong className="metric-value">{(plantState.stemHeight * 10).toFixed(1)} cm</strong>
+            <span className="metric-label">{t('vitals.stemHeight')}</span>
+            <strong className="metric-value">
+              {(plantState.stemHeight || 0) >= 1.0
+                ? `${(plantState.stemHeight || 0).toFixed(2)} m`
+                : `${((plantState.stemHeight || 0) * 100).toFixed(1)} cm`}
+            </strong>
           </div>
           <div className="metric-card">
-            <span className="metric-label">Root Depth</span>
-            <strong className="metric-value">{(plantState.rootDepth * 10).toFixed(1)} cm</strong>
+            <span className="metric-label">{t('vitals.rootDepth')}</span>
+            <strong className="metric-value">
+              {(plantState.rootDepth || 0) >= 1.0
+                ? `${(plantState.rootDepth || 0).toFixed(2)} m`
+                : `${((plantState.rootDepth || 0) * 100).toFixed(1)} cm`}
+            </strong>
           </div>
           <div className="metric-card">
             <span className="metric-label">
-              {plantState.speciesId === 'sunflower' ? 'Flower Head' : 'Flowers'}
+              {plantState.speciesId === 'sunflower' ? 'Flower Head' : t('vitals.flowers')}
             </span>
             <strong className="metric-value">
               {plantState.speciesId === 'sunflower'
@@ -169,7 +179,7 @@ export function StatusPanel({ plantState, onReferenceVideoClick }) {
           </div>
           <div className="metric-card">
             <span className="metric-label">
-              {plantState.speciesId === 'sunflower' ? 'Seed Filling' : 'Fruits'}
+              {plantState.speciesId === 'sunflower' ? 'Seed Filling' : t('vitals.fruits')}
             </span>
             <strong className="metric-value">
               {plantState.speciesId === 'sunflower'
@@ -183,7 +193,7 @@ export function StatusPanel({ plantState, onReferenceVideoClick }) {
         <div className="botanical-narrative">
           <div className="narrative-header">
             <Sprout size={14} className="narrative-icon" />
-            <span>Botanical Observation</span>
+            <span>{t('vitals.observation')}</span>
           </div>
           <p className="narrative-text">{plantState.explanation}</p>
         </div>
@@ -192,13 +202,13 @@ export function StatusPanel({ plantState, onReferenceVideoClick }) {
         <div className="stress-section">
           <div className="section-title">
             <ShieldAlert size={14} className="section-icon" />
-            <span>Stress Analysis</span>
+            <span>{t('vitals.stressAnalysis')}</span>
           </div>
 
           <div className="stress-rows-list">
             <div className="stress-row">
               <div className="stress-row-label">
-                <span>Water Deficit</span>
+                <span>{t('vitals.waterDeficit')}</span>
                 <span className="stress-percent">{Math.round(plantState.waterStress * 100)}%</span>
               </div>
               <div className="bar-track">
@@ -217,7 +227,7 @@ export function StatusPanel({ plantState, onReferenceVideoClick }) {
 
             <div className="stress-row">
               <div className="stress-row-label">
-                <span>Waterlogging</span>
+                <span>{t('vitals.waterlogging')}</span>
                 <span className="stress-percent">
                   {Math.round(plantState.waterloggingStress * 100)}%
                 </span>
@@ -238,7 +248,7 @@ export function StatusPanel({ plantState, onReferenceVideoClick }) {
 
             <div className="stress-row">
               <div className="stress-row-label">
-                <span>Light Stress</span>
+                <span>{t('vitals.lightStress')}</span>
                 <span className="stress-percent">{Math.round(plantState.lightStress * 100)}%</span>
               </div>
               <div className="bar-track">
@@ -257,7 +267,7 @@ export function StatusPanel({ plantState, onReferenceVideoClick }) {
 
             <div className="stress-row">
               <div className="stress-row-label">
-                <span>Thermal Stress</span>
+                <span>{t('vitals.thermalStress')}</span>
                 <span className="stress-percent">{Math.round(plantState.tempStress * 100)}%</span>
               </div>
               <div className="bar-track">

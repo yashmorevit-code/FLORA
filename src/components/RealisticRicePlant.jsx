@@ -4,19 +4,12 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { ProceduralRoots } from './ProceduralRoots.jsx';
 
-// Preload authentic 3D rice plant asset (Oryza sativa) - independent 154KB model by dariotolkien (CC-BY-NC 4.0)
 useGLTF.preload('/assets/plants/rice/rice_plant.glb');
 
 /**
  * Realistic Rice Plant Model (Oryza sativa)
  * Integrates authentic botanical cereal grass 3D model with realistic jointed culms,
  * linear graminoid foliage, and drooping branched grain panicles.
- * 
- * Distinct botanical characteristics:
- * - Independent asset completely distinct from wheat (no bilateral spikelets or awns)
- * - Multi-tiller hill habit: 4-5 tillering culms emerging from basal crown with arching blades
- * - Ripening progression: panicles transition from photosynthetic emerald to golden harvest paddy
- * - Coupled to FLORA's deterministic growth engine: dynamic height, tillering, and senescence
  */
 export function RealisticRicePlant({
   plantState,
@@ -33,25 +26,29 @@ export function RealisticRicePlant({
     fruitMaturity = 0,
     health = 100,
     waterStress = 0,
-    waterloggingStress = 0,
     senescenceProgress = 0,
     isTerminal = false,
   } = plantState;
 
   const canopyRef = useRef();
+  const leafMaterialsRef = useRef([]);
+  const panicleMaterialsRef = useRef([]);
+
   const { scene } = useGLTF('/assets/plants/rice/rice_plant.glb');
 
+  // Emergence factor: canopy scale starts at 0 for progress < 0.06, emerges smoothly
+  const emergenceFactor = Math.min(1.0, Math.max(0.0, (overallProgress - 0.06) / 0.10));
+
   // Dynamic scale factor:
-  // Native model height in rice_plant.glb is ~65.75 units.
-  // Standard mature paddy rice reaches ~1.05m to 1.25m in height.
   const targetHeight = Math.max(0.15, stemHeight || 1.15);
   const uniformScale = useMemo(() => {
+    if (emergenceFactor <= 0) return 0.0001;
     const matureScale = targetHeight / 65.75;
-    const growthMult = Math.min(1.0, Math.max(0.18, overallProgress * 1.06));
-    return matureScale * growthMult;
-  }, [targetHeight, overallProgress]);
+    const growthMult = Math.min(1.0, Math.max(0.10, overallProgress * 1.06));
+    return matureScale * growthMult * emergenceFactor;
+  }, [targetHeight, overallProgress, emergenceFactor]);
 
-  // Rice foliar tint (lush paddy emerald -> nitrogen chlorosis / drought browning)
+  // Rice foliar tint
   const foliarTint = useMemo(() => {
     const richGreen = new THREE.Color('#388e3c');
     const chlorotic = new THREE.Color('#c0ca33');
@@ -71,8 +68,7 @@ export function RealisticRicePlant({
     return c;
   }, [health, waterStress, senescenceProgress]);
 
-  // Rice panicle grain ripening progression:
-  // Milk stage (pale photosynthetic green) -> Dough stage (soft amber) -> Hard dough (golden paddy grain)
+  // Rice panicle grain ripening progression
   const panicleTint = useMemo(() => {
     const milkGreen = new THREE.Color('#66bb6a');
     const doughAmber = new THREE.Color('#e0a93b');
@@ -89,17 +85,12 @@ export function RealisticRicePlant({
     }
   }, [fruitMaturity, senescenceProgress]);
 
-  const isSelectedCulm = selectedPart?.type === 'stem' || selectedPart?.id?.includes('culm') || selectedPart?.id?.includes('tiller');
-  const isSelectedLeaf = selectedPart?.type === 'leaf' || selectedPart?.id?.includes('leaf') || selectedPart?.id?.includes('blade');
-  const isSelectedPanicle = selectedPart?.type === 'fruit' || selectedPart?.id?.includes('panicle') || selectedPart?.id?.includes('grain');
-
-  // Clone scene, center at base, and configure materials for leaves and grain panicles
+  // Clone scene ONCE
   const clonedTiller = useMemo(() => {
     const clone = scene.clone(true);
-
-    // Center X & Z, place base at Y = 0
-    // Model bounds: x [-11.42, 26.10] (center 7.34), y [-1.77, 63.98], z [-18.76, 10.84] (center -3.96)
     clone.position.set(-7.34, 1.77, 3.96);
+    leafMaterialsRef.current = [];
+    panicleMaterialsRef.current = [];
 
     clone.traverse((child) => {
       if (child.isMesh) {
@@ -110,93 +101,52 @@ export function RealisticRicePlant({
         const isPanicle = child.name === 'Object_4' || child.material?.name === 'lambert2SG';
 
         if (child.material) {
-          child.material = new THREE.MeshStandardMaterial({
+          const mat = new THREE.MeshStandardMaterial({
             name: isLeaves ? 'RiceLeaves' : 'RicePanicles',
-            color: isLeaves ? foliarTint : panicleTint,
             roughness: isLeaves ? 0.45 : 0.60,
             metalness: 0.05,
             side: THREE.DoubleSide,
           });
+          child.material = mat;
+          if (isLeaves) leafMaterialsRef.current.push(mat);
+          if (isPanicle) panicleMaterialsRef.current.push(mat);
         }
       }
     });
     return clone;
-  }, [scene, foliarTint, panicleTint]);
+  }, [scene]);
 
-  // Update selection highlights
+  // Direct material updates without cloning
   useEffect(() => {
-    if (!clonedTiller) return;
-    clonedTiller.traverse((child) => {
-      if (child.isMesh && child.material) {
-        const isLeaves = child.name === 'Object_3' || child.material?.name === 'RiceLeaves';
-        const isPanicle = child.name === 'Object_4' || child.material?.name === 'RicePanicles';
+    const isSelectedCulm = selectedPart?.type === 'stem' || selectedPart?.id?.includes('culm') || selectedPart?.id?.includes('tiller');
+    const isSelectedLeaf = selectedPart?.type === 'leaf' || selectedPart?.id?.includes('leaf') || selectedPart?.id?.includes('blade');
+    const isSelectedPanicle = selectedPart?.type === 'fruit' || selectedPart?.id?.includes('panicle') || selectedPart?.id?.includes('grain');
 
-        if ((isPanicle && isSelectedPanicle) || (isLeaves && isSelectedLeaf) || isSelectedCulm) {
-          child.material.emissive = new THREE.Color('#64ffda');
-          child.material.emissiveIntensity = 0.35;
-        } else {
-          child.material.emissive = new THREE.Color('#000000');
-          child.material.emissiveIntensity = 0.0;
-        }
-      }
+    leafMaterialsRef.current.forEach(mat => {
+      mat.color.copy(foliarTint);
+      mat.emissive.set((isSelectedLeaf || isSelectedCulm) ? '#64ffda' : '#000000');
+      mat.emissiveIntensity = (isSelectedLeaf || isSelectedCulm) ? 0.35 : 0.0;
     });
-  }, [clonedTiller, isSelectedCulm, isSelectedLeaf, isSelectedPanicle]);
 
-  // Botanical tillering cluster configuration (4-5 tillering culms form an authentic paddy hill)
-  const tillers = useMemo(() => [
-    { pos: [0, 0, 0], rot: [0.03, 0.0, 0.02], scale: 1.0 },
-    { pos: [0.035, 0, 0.025], rot: [0.08, 1.3, -0.06], scale: 0.96 },
-    { pos: [-0.030, 0, 0.030], rot: [-0.07, 2.5, 0.08], scale: 0.94 },
-    { pos: [-0.025, 0, -0.035], rot: [0.06, 3.8, 0.07], scale: 0.98 },
-    { pos: [0.030, 0, -0.025], rot: [-0.08, 5.1, -0.05], scale: 0.92 },
-  ], []);
+    panicleMaterialsRef.current.forEach(mat => {
+      mat.color.copy(panicleTint);
+      mat.emissive.set(isSelectedPanicle ? '#64ffda' : '#000000');
+      mat.emissiveIntensity = isSelectedPanicle ? 0.35 : 0.0;
+    });
+  }, [foliarTint, panicleTint, selectedPart]);
 
-  // Gentle wind sway simulating paddy field breeze
+  // Gentle rhythmic wind sway
   useFrame(({ clock }) => {
-    if (!canopyRef.current) return;
+    if (!canopyRef.current || emergenceFactor <= 0.05) return;
     const t = clock.getElapsedTime();
-    canopyRef.current.rotation.z = Math.sin(t * 1.7) * (windIntensity * 0.020);
-    canopyRef.current.rotation.x = Math.cos(t * 1.3) * (windIntensity * 0.015);
+    const flex = Math.min(1.0, stemHeight / 1.15);
+    canopyRef.current.rotation.z = Math.sin(t * 1.9) * (windIntensity * 0.03 * flex);
+    canopyRef.current.rotation.x = Math.cos(t * 1.3) * (windIntensity * 0.02 * flex);
   });
-
-  const handleClick = (e) => {
-    e.stopPropagation();
-    const meshName = e.object?.name || '';
-    const matName = e.object?.material?.name || '';
-
-    if (meshName === 'Object_4' || matName === 'RicePanicles') {
-      onSelectPart?.({
-        id: 'fruit-rice-panicle',
-        name: 'Drooping Branched Panicle with Paddy Grains',
-        type: 'fruit',
-        species: 'Rice',
-        maturity: fruitMaturity,
-        parent: 'Terminal Flag Rachis',
-      });
-    } else if (meshName === 'Object_3' || matName === 'RiceLeaves') {
-      onSelectPart?.({
-        id: 'leaf-rice-blade',
-        name: 'Linear Graminoid Leaf Blade with Ligule',
-        type: 'leaf',
-        species: 'Rice',
-        maturity: overallProgress,
-        parent: 'Culm Sheath Node',
-      });
-    } else {
-      onSelectPart?.({
-        id: 'stem-rice-culm',
-        name: 'Hollow Jointed Culm & Tillering Crown',
-        type: 'stem',
-        species: 'Rice',
-        maturity: overallProgress,
-        parent: 'Basal Crown',
-      });
-    }
-  };
 
   return (
     <group position={[0, 0, 0]}>
-      {/* 1. Subsoil Adventitious Root System with Aerenchyma */}
+      {/* 1. Subsoil Fibrous Root Clump */}
       <ProceduralRoots
         rootDepth={rootDepth}
         rootSpread={rootSpread}
@@ -207,28 +157,27 @@ export function RealisticRicePlant({
         isSunflower={false}
       />
 
-      {/* 2. Above-Ground 3D Rice Hill Canopy (Tillering Culms & Drooping Panicles) */}
-      <group
-        ref={canopyRef}
-        position={[0, 0.035, 0]}
-        onClick={handleClick}
-      >
-        {tillers.map((tiller, idx) => (
-          <group
-            key={`rice-tiller-${idx}`}
-            position={tiller.pos}
-            rotation={tiller.rot}
-            scale={[
-              uniformScale * tiller.scale,
-              uniformScale * tiller.scale,
-              uniformScale * tiller.scale,
-            ]}
-          >
-            <primitive object={clonedTiller.clone(true)} />
+      {/* 2. Above-Ground Rice Hill Canopy */}
+      {emergenceFactor > 0.01 && (
+        <group ref={canopyRef} position={[0, 0, 0]}>
+          <group scale={[uniformScale, uniformScale, uniformScale]}>
+            <primitive
+              object={clonedTiller}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelectPart?.({
+                  id: 'leaf-rice-blade',
+                  name: 'Linear Graminoid Rice Leaf Blade',
+                  type: 'leaf',
+                  species: 'Rice',
+                  maturity: overallProgress,
+                  parent: 'Hollow Culm Node',
+                });
+              }}
+            />
           </group>
-        ))}
-      </group>
+        </group>
+      )}
     </group>
   );
 }
-

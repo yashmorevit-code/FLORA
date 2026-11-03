@@ -18,10 +18,13 @@ import { SpeciesWorkspace } from './components/SpeciesWorkspace.jsx';
 import { PlaceholderWorkspace } from './components/PlaceholderWorkspace.jsx';
 import { LandingPage } from './components/landing/LandingPage.jsx';
 import { BotanicalGuidePanel } from './components/BotanicalGuidePanel.jsx';
+import LanguageSelector from './components/LanguageSelector.jsx';
+import { useTranslation } from './i18n/index.jsx';
 import { normalizeSpeciesId, getSpeciesConfig, SPECIES_IDS } from './simulation/species.js';
 import { audioController } from './simulation/audioController.js';
 
 export default function App() {
+  const { t } = useTranslation();
   // Top-level Application Route ('landing' | 'simulator')
   // Opens landing page by default on root, or simulator if explicitly on /simulator or query parameters exist
   const [appRoute, setAppRoute] = useState(() => {
@@ -476,7 +479,7 @@ export default function App() {
           >
             <h1>FLORA</h1>
             <span className="flora-branding-subtitle">
-              Botanical Plant Growth Simulator &bull;{' '}
+              {t('app.subtitle')} &bull;{' '}
               <strong style={{ color: 'var(--color-primary-green-light)', textDecoration: 'underline' }}>
                 {(() => {
                   const sp = getSpeciesConfig(plantState.speciesId);
@@ -494,13 +497,14 @@ export default function App() {
         />
 
         <div className="flora-top-status">
+          <LanguageSelector />
           <button
             type="button"
             className="flora-btn flora-overview-btn"
             onClick={handleReturnToLanding}
             title="Return to the Flora Landing Showcase"
           >
-            <span>Overview</span>
+            <span>{t('nav.overview')}</span>
           </button>
           {currentWorkspace === 'simulator' && (
             <div className="panel-toggles-group">
@@ -512,7 +516,7 @@ export default function App() {
                 aria-pressed={showControlsPanel}
               >
                 <SlidersHorizontal size={13} />
-                <span>Controls</span>
+                <span>{t('panels.controls')}</span>
               </button>
               <button
                 type="button"
@@ -522,7 +526,7 @@ export default function App() {
                 aria-pressed={showStatusPanel}
               >
                 <Activity size={13} />
-                <span>Vitals</span>
+                <span>{t('panels.vitals')}</span>
               </button>
               <button
                 type="button"
@@ -532,17 +536,17 @@ export default function App() {
                 aria-pressed={showBotanicalGuide}
               >
                 <Headphones size={13} />
-                <span>Guide</span>
+                <span>{t('panels.guide')}</span>
               </button>
             </div>
           )}
           <div className="status-pill">
             <Compass size={14} color="#52c77a" />
-            <span>Engine: <strong>Three.js / R3F</strong></span>
+            <span>{t('status.engine')}: <strong>Three.js / R3F</strong></span>
           </div>
           <div className="status-pill">
             <ShieldCheck size={14} color="#52c77a" />
-            <span>Simulation: <strong>Deterministic</strong></span>
+            <span>{t('status.simulation')}: <strong>{t('status.deterministic')}</strong></span>
           </div>
         </div>
       </header>

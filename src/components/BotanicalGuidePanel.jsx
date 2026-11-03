@@ -20,11 +20,12 @@ import {
   Film,
   AlertTriangle,
   Compass,
-  ArrowRight
+  ArrowRight,
 } from 'lucide-react';
 import { audioController } from '../simulation/audioController.js';
 import { getStageNarration, getAllNarrationsForSpecies, getNarrationScript } from '../simulation/narrationData.js';
 import { getSpeciesConfig, getActiveStage } from '../simulation/species.js';
+import { useTranslation } from '../i18n/index.jsx';
 
 export function BotanicalGuidePanel({
   plantState,
@@ -32,6 +33,7 @@ export function BotanicalGuidePanel({
   onInspectOrgan,
   onClose,
 }) {
+  const { t, currentLanguage } = useTranslation();
   const speciesCfg = getSpeciesConfig(plantState?.speciesId);
   const activeSimStageInfo = getActiveStage(speciesCfg, plantState?.overallProgress, plantState?.ageDays);
   const simStageId = activeSimStageInfo?.stage || 'SEED';
@@ -54,8 +56,12 @@ export function BotanicalGuidePanel({
   // Active species narration entry for what is CURRENTLY being narrated
   const currentNarratedStageId = playerState.stageId || simStageId;
   const currentNarratedSpeciesId = playerState.speciesId || plantState?.speciesId || 'tomato';
-  const narration = getStageNarration(currentNarratedSpeciesId, currentNarratedStageId);
-  const allStages = getAllNarrationsForSpecies(currentNarratedSpeciesId);
+  const activeLang = playerState.language || currentLanguage || 'en';
+  const narration = getStageNarration(currentNarratedSpeciesId, currentNarratedStageId, activeLang);
+  const allStages = getAllNarrationsForSpecies(currentNarratedSpeciesId, activeLang);
+
+  // Clean title without parenthetical English in Hindi/Marathi
+  const cleanTitle = (narration.title || '').replace(/\s*\([A-Za-z0-9\s/&–-]+\)\s*$/, '').trim();
 
   // Detect if simulation has progressed beyond the currently narrated stage
   const isOutOfSync = simStageId !== currentNarratedStageId;
@@ -140,22 +146,51 @@ export function BotanicalGuidePanel({
     >
       {/* Top Header Bar */}
       <div className="guide-header">
-        <div className="guide-title-box">
-          <div className="guide-icon-badge">
-            <Headphones size={15} color="#46B86C" />
+        <div className="guide-header-top-row">
+          <div className="guide-title-box">
+            <div className="guide-icon-badge">
+              <Headphones size={15} color="#46B86C" />
+            </div>
+            <div className="guide-title-text-group">
+              <div className="guide-species-title">
+                {t(`speciesData.${speciesCfg.id}.commonName`, speciesCfg.commonName)}{' '}
+                <span className="guide-species-scientific">({speciesCfg.scientificName})</span>
+              </div>
+              <div className="guide-meta-sub">
+                {t('panels.guide')} &bull; Milestone {playerState.stageIndex + 1} {t('guide.of', 'of')} {allStages.length}
+              </div>
+            </div>
           </div>
-          <div className="guide-title-text-group">
-            <div className="guide-species-title">
-              {speciesCfg.commonName} <span className="guide-species-scientific">({speciesCfg.scientificName})</span>
-            </div>
-            <div className="guide-meta-sub">
-              FLORA Guide &bull; Milestone {playerState.stageIndex + 1} of {allStages.length}
-            </div>
+
+          <div className="guide-header-window-actions">
+            {/* Minimize / Expand Toggle */}
+            <button
+              type="button"
+              className="guide-action-icon-btn"
+              onClick={() => setIsMinimized((prev) => !prev)}
+              title={isMinimized ? 'Expand Guide Panel' : 'Minimize to compact audio dock'}
+              aria-label={isMinimized ? 'Expand Guide Panel' : 'Minimize Guide Panel'}
+            >
+              {isMinimized ? <Maximize2 size={13} /> : <Minimize2 size={13} />}
+            </button>
+
+            {/* Close Panel */}
+            {onClose && (
+              <button
+                type="button"
+                className="guide-action-icon-btn close-btn"
+                onClick={onClose}
+                title="Close Botanical Guide"
+                aria-label="Close Botanical Guide"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="guide-header-actions">
-          {/* Speed Variant Selector Pills */}
+        {/* Secondary Header Row: Speed Pills & Guided Mode Toggle */}
+        <div className="guide-header-controls-row">
           <div className="guide-speed-pills">
             {['1x', '2x', '5x'].map((v) => (
               <button
@@ -170,7 +205,6 @@ export function BotanicalGuidePanel({
             ))}
           </div>
 
-          {/* Guided Mode Toggle Pill */}
           <button
             type="button"
             className={`guide-mode-btn ${playerState.mode === 'guided' ? 'active' : ''}`}
@@ -182,32 +216,8 @@ export function BotanicalGuidePanel({
             }
           >
             <Film size={12} />
-            <span>{playerState.mode === 'guided' ? 'Guided Tour' : 'Free Mode'}</span>
+            <span>{playerState.mode === 'guided' ? t('timeline.guidedMode') : t('timeline.freeMode')}</span>
           </button>
-
-          {/* Minimize / Expand Toggle */}
-          <button
-            type="button"
-            className="guide-action-icon-btn"
-            onClick={() => setIsMinimized((prev) => !prev)}
-            title={isMinimized ? 'Expand Guide Panel' : 'Minimize to compact audio dock'}
-            aria-label={isMinimized ? 'Expand Guide Panel' : 'Minimize Guide Panel'}
-          >
-            {isMinimized ? <Maximize2 size={13} /> : <Minimize2 size={13} />}
-          </button>
-
-          {/* Close Panel */}
-          {onClose && (
-            <button
-              type="button"
-              className="guide-action-icon-btn close-btn"
-              onClick={onClose}
-              title="Close Botanical Guide"
-              aria-label="Close Botanical Guide"
-            >
-              <X size={14} />
-            </button>
-          )}
         </div>
       </div>
 
@@ -216,7 +226,7 @@ export function BotanicalGuidePanel({
         <div className="guide-minimized-bar">
           <div className="mini-stage-info">
             <span className="mini-stage-num">0{playerState.stageIndex + 1}</span>
-            <span className="mini-stage-name">{narration.title}</span>
+            <span className="mini-stage-name">{cleanTitle}</span>
           </div>
           <div className="mini-controls">
             <button
@@ -246,8 +256,8 @@ export function BotanicalGuidePanel({
               <div className="completion-content">
                 <Sparkles size={16} color="#46B86C" />
                 <div className="completion-text">
-                  <strong>Botanical Journey Completed!</strong>
-                  <span>All 12 developmental milestones of {speciesCfg.commonName} have been observed.</span>
+                  <strong>{t('guide.completedTitle')}</strong>
+                  <span>{t('guide.completedSubtitle', { species: speciesCfg.commonName })}</span>
                 </div>
               </div>
               <button
@@ -257,7 +267,7 @@ export function BotanicalGuidePanel({
                 title="Restart guided tour from Seed Imbibition"
               >
                 <RotateCcw size={12} />
-                <span>Restart Tour</span>
+                <span>{t('guide.restartTour')}</span>
               </button>
             </div>
           )}
@@ -267,7 +277,8 @@ export function BotanicalGuidePanel({
             <div className="guide-sync-status-banner">
               <span className={`sync-dot ${playerState.isPlaying ? 'active' : ''}`} />
               <span>
-                Guided Pace Active &bull; Plant development locked to <strong>{playerState.speedVariant} ({playerState.speedVariant === '1x' ? 'Full' : playerState.speedVariant === '2x' ? 'Concise' : 'Key Points'})</strong> narration
+                {t('guide.guidedPaceActive', 'Guided Pace Active • Plant development locked to')}{' '}
+                <strong>{playerState.speedVariant} ({playerState.speedVariant === '1x' ? t('timeline.fullStory') : playerState.speedVariant === '2x' ? t('timeline.concise') : t('timeline.keyPoints')})</strong> {t('guide.transcript', 'narration')}
               </span>
             </div>
           )}
@@ -278,7 +289,8 @@ export function BotanicalGuidePanel({
               <div className="guide-sync-text">
                 <Compass size={13} className="sync-icon" />
                 <span>
-                  Simulation reached <strong>Stage {simStageIndex + 1}: {activeSimStageInfo?.stageConfig?.name}</strong>
+                  {t('guide.simulationReached', 'Simulation reached')}{' '}
+                  <strong>{t(`stages.${activeSimStageInfo?.stageConfig?.stage}.name`, activeSimStageInfo?.stageConfig?.name)}</strong>
                 </span>
               </div>
               <button
@@ -287,7 +299,7 @@ export function BotanicalGuidePanel({
                 onClick={handleSyncToSimulation}
                 title="Jump Guide narration to match current growth stage"
               >
-                <span>Sync Guide</span>
+                <span>{t('guide.syncGuide', 'Sync Guide')}</span>
                 <ArrowRight size={11} />
               </button>
             </div>
@@ -297,7 +309,7 @@ export function BotanicalGuidePanel({
           <div className="guide-stage-banner">
             <div className="stage-badge-pill">
               <span className="stage-num">0{playerState.stageIndex + 1}</span>
-              <h3 className="stage-name-bold">{narration.title}</h3>
+              <h3 className="stage-name-bold">{cleanTitle}</h3>
             </div>
             <p className="stage-summary-text">{narration.shortSummary}</p>
           </div>
@@ -316,69 +328,18 @@ export function BotanicalGuidePanel({
                 title="Retry loading this audio track"
               >
                 <RotateCcw size={12} />
-                <span>Retry</span>
+                <span>{t('guide.retry', 'Retry')}</span>
               </button>
             </div>
           )}
 
-          {/* Audio Player Controls Strip */}
-          <div className="guide-player-strip">
-            <div className="player-main-controls">
-              <button
-                type="button"
-                className="guide-nav-btn"
-                onClick={handlePrevStage}
-                disabled={playerState.stageIndex === 0}
-                title="Previous Milestone Narration"
-                aria-label="Previous Milestone Narration"
-              >
-                <SkipBack size={13} />
-              </button>
-
-              <button
-                type="button"
-                className={`guide-play-btn ${playerState.isPlaying ? 'playing' : ''}`}
-                onClick={handleTogglePlay}
-                disabled={playerState.isLoading}
-                title={playerState.isPlaying ? 'Pause Narration' : 'Listen to Nature Documentary Narration'}
-                aria-label={playerState.isPlaying ? 'Pause Narration' : 'Play Narration'}
-              >
-                {playerState.isLoading ? (
-                  <span className="audio-loading-spinner" />
-                ) : playerState.isPlaying ? (
-                  <Pause size={16} />
-                ) : (
-                  <Play size={16} style={{ marginLeft: '2px' }} />
-                )}
-              </button>
-
-              <button
-                type="button"
-                className="guide-nav-btn"
-                onClick={handleNextStage}
-                disabled={playerState.stageIndex === allStages.length - 1}
-                title="Next Milestone Narration"
-                aria-label="Next Milestone Narration"
-              >
-                <SkipForward size={13} />
-              </button>
-
-              <button
-                type="button"
-                className="guide-nav-btn"
-                onClick={handleReplay}
-                title="Replay from Beginning"
-                aria-label="Replay Narration"
-              >
-                <RotateCcw size={13} />
-              </button>
-            </div>
-
-            {/* Scrubber & Timestamp */}
-            <div className="player-scrubber-box">
+          {/* Dedicated Full-Width Responsive Audio Player Card */}
+          <div className="guide-audio-player-card">
+            {/* Full Width Progress Scrubber & Timestamps */}
+            <div className="player-timeline-block">
               <input
                 type="range"
-                className="guide-timeline-scrub"
+                className="guide-timeline-scrub-bar"
                 min="0"
                 max={playerState.duration || 100}
                 step="0.1"
@@ -387,36 +348,89 @@ export function BotanicalGuidePanel({
                 title="Scrub Narration Audio"
                 aria-label="Audio playback scrub bar"
               />
-              <div className="scrub-time-label">
-                <span>{formatTime(playerState.currentTime)}</span>
-                <span>/</span>
-                <span>{formatTime(playerState.duration)}</span>
+              <div className="player-timestamp-row">
+                <span className="timestamp-current">{formatTime(playerState.currentTime)}</span>
+                <span className="timestamp-duration">{formatTime(playerState.duration)}</span>
               </div>
             </div>
 
-            {/* Volume Control */}
-            <div className="player-extra-controls">
-              <button
-                type="button"
-                className="guide-icon-toggle"
-                onClick={() => audioController.setMuted(!playerState.isMuted)}
-                title={playerState.isMuted ? 'Unmute Audio' : 'Mute Audio'}
-                aria-label={playerState.isMuted ? 'Unmute Audio' : 'Mute Audio'}
-              >
-                {playerState.isMuted || playerState.volume === 0 ? <VolumeX size={13} /> : <Volume2 size={13} />}
-              </button>
+            {/* Transport & Volume Controls Row */}
+            <div className="player-action-row">
+              <div className="player-transport-group">
+                <button
+                  type="button"
+                  className="guide-nav-btn"
+                  onClick={handlePrevStage}
+                  disabled={playerState.stageIndex === 0}
+                  title="Previous Milestone Narration"
+                  aria-label="Previous Milestone Narration"
+                >
+                  <SkipBack size={15} />
+                </button>
 
-              <input
-                type="range"
-                className="guide-volume-slider"
-                min="0"
-                max="1"
-                step="0.05"
-                value={playerState.isMuted ? 0 : playerState.volume}
-                onChange={(e) => audioController.setVolume(parseFloat(e.target.value))}
-                title="Adjust Narration Volume"
-                aria-label="Narration volume"
-              />
+                <button
+                  type="button"
+                  className={`guide-play-btn ${playerState.isPlaying ? 'playing' : ''}`}
+                  onClick={handleTogglePlay}
+                  disabled={playerState.isLoading}
+                  title={playerState.isPlaying ? 'Pause Narration' : 'Listen to Nature Documentary Narration'}
+                  aria-label={playerState.isPlaying ? 'Pause Narration' : 'Play Narration'}
+                >
+                  {playerState.isLoading ? (
+                    <span className="audio-loading-spinner" />
+                  ) : playerState.isPlaying ? (
+                    <Pause size={17} />
+                  ) : (
+                    <Play size={17} style={{ marginLeft: '2px' }} />
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  className="guide-nav-btn"
+                  onClick={handleNextStage}
+                  disabled={playerState.stageIndex === allStages.length - 1}
+                  title="Next Milestone Narration"
+                  aria-label="Next Milestone Narration"
+                >
+                  <SkipForward size={15} />
+                </button>
+
+                <button
+                  type="button"
+                  className="guide-nav-btn"
+                  onClick={handleReplay}
+                  title="Replay from Beginning"
+                  aria-label="Replay Narration"
+                >
+                  <RotateCcw size={14} />
+                </button>
+              </div>
+
+              {/* Volume & Mute Controls */}
+              <div className="player-volume-group">
+                <button
+                  type="button"
+                  className="guide-icon-toggle"
+                  onClick={() => audioController.setMuted(!playerState.isMuted)}
+                  title={playerState.isMuted ? 'Unmute Audio' : 'Mute Audio'}
+                  aria-label={playerState.isMuted ? 'Unmute Audio' : 'Mute Audio'}
+                >
+                  {playerState.isMuted || playerState.volume === 0 ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                </button>
+
+                <input
+                  type="range"
+                  className="guide-volume-slider-bar"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={playerState.isMuted ? 0 : playerState.volume}
+                  onChange={(e) => audioController.setVolume(parseFloat(e.target.value))}
+                  title="Adjust Narration Volume"
+                  aria-label="Narration volume"
+                />
+              </div>
             </div>
           </div>
 
@@ -425,7 +439,10 @@ export function BotanicalGuidePanel({
             <div className="guide-organ-callout">
               <div className="organ-callout-text">
                 <Eye size={13} color="#46B86C" />
-                <span>Primary Structure: <strong>{narration.highlightOrgan.toUpperCase()}</strong></span>
+                <span>
+                  {t('guide.primaryStructure', 'Primary Structure')}:{' '}
+                  <strong>{narration.highlightOrgan.toUpperCase()}</strong>
+                </span>
               </div>
               <button
                 type="button"
@@ -433,7 +450,7 @@ export function BotanicalGuidePanel({
                 onClick={handleInspectOrgan}
                 title={`Center and inspect ${narration.highlightOrgan} in 3D scene`}
               >
-                <span>Inspect in 3D</span>
+                <span>{t('guide.inspectOrgan')}</span>
               </button>
             </div>
           )}
@@ -448,7 +465,7 @@ export function BotanicalGuidePanel({
               onClick={() => setActiveTab('story')}
             >
               <BookOpen size={12} />
-              <span>Transcript</span>
+              <span>{t('guide.transcript')}</span>
             </button>
             <button
               type="button"
@@ -458,7 +475,7 @@ export function BotanicalGuidePanel({
               onClick={() => setActiveTab('biology')}
             >
               <Layers size={12} />
-              <span>Biology</span>
+              <span>{t('guide.biology')}</span>
             </button>
             <button
               type="button"
@@ -468,7 +485,7 @@ export function BotanicalGuidePanel({
               onClick={() => setActiveTab('environment')}
             >
               <Sun size={12} />
-              <span>Ecology</span>
+              <span>{t('guide.ecology')}</span>
             </button>
           </div>
 
@@ -479,17 +496,17 @@ export function BotanicalGuidePanel({
                 <div className="transcript-variant-tag">
                   <span>
                     {playerState.speedVariant === '1x'
-                      ? 'Full Educational Documentary Script (1x)'
+                      ? t('guide.fullDocScript', 'Full Educational Documentary Script (1x)')
                       : playerState.speedVariant === '2x'
-                        ? 'Concise Biological Mechanism Script (2x)'
-                        : 'Key Milestones Summary Script (5x)'}
+                        ? t('guide.conciseScript', 'Concise Biological Mechanism Script (2x)')
+                        : t('guide.keyPointsScript', 'Key Milestones Summary Script (5x)')}
                   </span>
                 </div>
                 <blockquote className="narration-script-text">
                   &ldquo;{getNarrationScript(narration, playerState.speedVariant)}&rdquo;
                 </blockquote>
                 <div className="visual-changes-box">
-                  <strong>Visible Botanical Changes:</strong>
+                  <strong>{t('guide.visibleChanges')}:</strong>
                   <p>{narration.visualChanges}</p>
                 </div>
               </div>
@@ -500,7 +517,7 @@ export function BotanicalGuidePanel({
                 <div className="concept-card">
                   <div className="concept-header">
                     <Sparkles size={13} color="#46B86C" />
-                    <strong>Cellular & Developmental Process</strong>
+                    <strong>{t('guide.cellularProcess')}</strong>
                   </div>
                   <p>{narration.biologicalProcess}</p>
                 </div>
@@ -508,7 +525,7 @@ export function BotanicalGuidePanel({
                 <div className="concept-card">
                   <div className="concept-header">
                     <Shield size={13} color="#52c77a" />
-                    <strong>Evolutionary & Survival Value</strong>
+                    <strong>{t('guide.survivalValue')}</strong>
                   </div>
                   <p>{narration.ecologicalSignificance}</p>
                 </div>
@@ -520,13 +537,13 @@ export function BotanicalGuidePanel({
                 <div className="env-influence-box">
                   <div className="env-header-row">
                     <Sun size={13} color="#D4A359" />
-                    <strong>Environmental Influences & Requirements</strong>
+                    <strong>{t('guide.environmentalInfluences')}</strong>
                   </div>
                   <p>{narration.environmentalInfluences}</p>
                 </div>
 
                 <div className="scientific-reference-box">
-                  <strong>Botanical Sources & References:</strong>
+                  <strong>{t('guide.references')}:</strong>
                   <p>{narration.references}</p>
                 </div>
               </div>

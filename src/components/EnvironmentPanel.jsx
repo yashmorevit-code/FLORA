@@ -17,6 +17,7 @@ import {
   Minus,
 } from 'lucide-react';
 import { getAllSpecies } from '../simulation/species.js';
+import { useTranslation } from '../i18n/index.jsx';
 
 export function EnvironmentPanel({
   environment,
@@ -35,6 +36,8 @@ export function EnvironmentPanel({
   windIntensity,
   onChangeWind,
 }) {
+  const { t } = useTranslation();
+
   const handleChange = (key, value) => {
     onChangeEnvironment({
       ...environment,
@@ -57,9 +60,9 @@ export function EnvironmentPanel({
         <div className="panel-title-group">
           <h2>
             <Sparkles size={16} className="panel-header-icon" />
-            Environment Controls
+            {t('environment.title')}
           </h2>
-          <span className="panel-subtitle">Rhizosphere & Atmosphere</span>
+          <span className="panel-subtitle">{t('environment.subtitle')}</span>
         </div>
       </div>
 
@@ -69,7 +72,7 @@ export function EnvironmentPanel({
           <div className="control-group species-group">
             <label className="control-label" htmlFor="flora-species-select">
               <Leaf size={14} className="control-icon leaf" />
-              <span>Botanical Species</span>
+              <span>{t('species.selectSpecies')}</span>
             </label>
             <div className="select-wrapper">
               <select
@@ -93,7 +96,7 @@ export function EnvironmentPanel({
           <div className="control-header">
             <label className="control-label">
               <Droplets size={14} className="control-icon water" />
-              <span>Soil Moisture</span>
+              <span>{t('environment.moisture')}</span>
             </label>
             <span className="control-value">{environment.moisture}%</span>
           </div>
@@ -113,7 +116,7 @@ export function EnvironmentPanel({
               onClick={() => handleChange('moisture', Math.min(100, environment.moisture + 15))}
               title="Add water to soil moisture (+15%)"
             >
-              <Plus size={13} /> Water (+15%)
+              <Plus size={13} /> {t('environment.water')} (+15%)
             </button>
             <button
               type="button"
@@ -121,7 +124,7 @@ export function EnvironmentPanel({
               onClick={() => handleChange('moisture', Math.max(0, environment.moisture - 15))}
               title="Dry soil moisture (-15%)"
             >
-              <Minus size={13} /> Dry (-15%)
+              <Minus size={13} /> {t('environment.dry')} (-15%)
             </button>
           </div>
         </div>
@@ -131,7 +134,7 @@ export function EnvironmentPanel({
           <div className="control-header">
             <label className="control-label">
               <Sun size={14} className="control-icon sun" />
-              <span>Sunlight</span>
+              <span>{t('environment.sunlight')}</span>
             </label>
             <span className="control-value">{environment.light}%</span>
           </div>
@@ -151,7 +154,7 @@ export function EnvironmentPanel({
           <div className="control-header">
             <label className="control-label">
               <Thermometer size={14} className="control-icon temp" />
-              <span>Temperature</span>
+              <span>{t('environment.temperature')}</span>
             </label>
             <span className="control-value">{environment.temperature}°C</span>
           </div>
@@ -171,7 +174,7 @@ export function EnvironmentPanel({
           <div className="control-header">
             <label className="control-label">
               <Sparkles size={14} className="control-icon nutrients" />
-              <span>Nutrients (N-P-K)</span>
+              <span>{t('environment.nutrients')}</span>
             </label>
             <span className="control-value">{environment.nutrients}%</span>
           </div>
@@ -191,7 +194,7 @@ export function EnvironmentPanel({
               onClick={() => handleChange('nutrients', Math.min(100, environment.nutrients + 20))}
               title="Apply mineral fertilization (+20%)"
             >
-              <Plus size={13} /> Fertilize (+20%)
+              <Plus size={13} /> {t('environment.fertilize')} (+20%)
             </button>
           </div>
         </div>
@@ -201,7 +204,7 @@ export function EnvironmentPanel({
           <div className="control-header">
             <label className="control-label">
               <Wind size={14} className="control-icon wind" />
-              <span>Canopy Breeze</span>
+              <span>{t('environment.wind')}</span>
             </label>
             <span className="control-value text-muted">{getWindLabel(windIntensity)}</span>
           </div>
@@ -223,7 +226,7 @@ export function EnvironmentPanel({
         <div className="control-group">
           <div className="section-title">
             <Camera size={14} className="section-icon" />
-            <span>Camera Viewpoints</span>
+            <span>{t('environment.viewpoints')}</span>
           </div>
           <div className="camera-presets-grid">
             <button
@@ -233,7 +236,7 @@ export function EnvironmentPanel({
               title="Overview: Whole plant and rhizosphere framing"
             >
               <Compass size={13} />
-              <span>Overview</span>
+              <span>{t('environment.overview')}</span>
             </button>
             <button
               type="button"
@@ -242,7 +245,7 @@ export function EnvironmentPanel({
               title="Canopy: Foliage, leaf nodes, and shoot apex"
             >
               <Eye size={13} />
-              <span>Canopy</span>
+              <span>{t('environment.canopy')}</span>
             </button>
             <button
               type="button"
@@ -251,7 +254,7 @@ export function EnvironmentPanel({
               title="Roots: Subsoil root system architecture"
             >
               <Layers size={13} />
-              <span>Roots</span>
+              <span>{t('environment.roots')}</span>
             </button>
             <button
               type="button"
@@ -260,7 +263,7 @@ export function EnvironmentPanel({
               title="Flowers & Fruit: Reproductive organs and floral clusters"
             >
               <Sparkles size={13} />
-              <span>Flowers/Fruit</span>
+              <span>{t('environment.flowersFruit')}</span>
             </button>
           </div>
         </div>
@@ -269,7 +272,7 @@ export function EnvironmentPanel({
         <div className="control-group">
           <div className="section-title">
             <Tag size={14} className="section-icon" />
-            <span>3D Anatomy Labels</span>
+            <span>{t('environment.anatomyLabels')}</span>
           </div>
           <div className="annotation-mode-grid">
             <button
@@ -278,7 +281,7 @@ export function EnvironmentPanel({
               onClick={() => onChangeAnnotationMode?.('overview')}
               title="Overview Mode: Displays 3-4 essential labels with uncluttered silhouette"
             >
-              Overview
+              {t('environment.overview')}
             </button>
             <button
               type="button"
@@ -286,7 +289,7 @@ export function EnvironmentPanel({
               onClick={() => onChangeAnnotationMode?.('all')}
               title="All Anatomy Mode: Comprehensive botanical labeling of organs"
             >
-              All Anatomy
+              {t('environment.allAnatomy')}
             </button>
             <button
               type="button"
@@ -294,7 +297,7 @@ export function EnvironmentPanel({
               onClick={() => onChangeAnnotationMode?.('hidden')}
               title="Hidden Mode: Disable all 3D organ labels"
             >
-              Off
+              {t('environment.off')}
             </button>
           </div>
         </div>
@@ -308,7 +311,7 @@ export function EnvironmentPanel({
             title={showRoots ? 'Hide subsoil roots' : 'View subsoil roots'}
           >
             {showRoots ? <Eye size={14} /> : <EyeOff size={14} />}
-            <span>{showRoots ? 'Hide Subsoil Roots' : 'View Subsoil Roots'}</span>
+            <span>{showRoots ? t('environment.hideRoots') : t('environment.viewRoots')}</span>
           </button>
 
           <button
@@ -318,7 +321,7 @@ export function EnvironmentPanel({
             title="Toggle 3D anatomical organ callout annotations"
           >
             <Tag size={14} />
-            <span>{showAnnotations ? 'Hide Anatomy Labels' : 'Show Anatomy Labels'}</span>
+            <span>{showAnnotations ? t('environment.hideLabels') : t('environment.showLabels')}</span>
           </button>
 
           {onResetCamera && (
@@ -329,7 +332,7 @@ export function EnvironmentPanel({
               title="Reset 3D camera to default viewpoint"
             >
               <RotateCcw size={14} />
-              <span>Reset Camera View</span>
+              <span>{t('environment.resetCamera')}</span>
             </button>
           )}
         </div>

@@ -18,6 +18,7 @@ import { EnvironmentPhysicsSection } from './EnvironmentPhysicsSection.jsx';
 import { LifecycleSection } from './LifecycleSection.jsx';
 import { TelemetrySection } from './TelemetrySection.jsx';
 import { LandingFooter } from './LandingFooter.jsx';
+import { useTranslation } from '../../i18n/index.jsx';
 import './LandingPage.css';
 
 const HERO_SPECIMENS = [
@@ -28,6 +29,7 @@ const HERO_SPECIMENS = [
 ];
 
 export function LandingPage({ onEnterSimulator }) {
+  const { t } = useTranslation();
   const [activeSpecimen, setActiveSpecimen] = useState('tomato');
   const [hoveredPart, setHoveredPart] = useState(null);
 
@@ -53,18 +55,15 @@ export function LandingPage({ onEnterSimulator }) {
           <div className="flora-hero-text-col">
             <div className="flora-hero-eyebrow">
               <span className="flora-eyebrow-dot" />
-              <span className="flora-eyebrow-text">A LIVING BOTANICAL SIMULATION LABORATORY</span>
+              <span className="flora-eyebrow-text">{t('landing.tagline')}</span>
             </div>
 
             <h1 className="flora-hero-headline">
-              Where Science Meets <br />
-              <span className="flora-headline-italic">Living Nature.</span>
+              {t('landing.heroTitle')}
             </h1>
 
             <p className="flora-hero-lead">
-              Explore plant growth as an interconnected biophysical system.
-              Shape rhizosphere hydrology, tune photosynthetic radiation, and uncover
-              the cellular science behind every stage of plant life.
+              {t('landing.heroLead')}
             </p>
 
             {/* Call to Actions */}
@@ -75,7 +74,7 @@ export function LandingPage({ onEnterSimulator }) {
                 onClick={() => onEnterSimulator(activeSpecimen)}
                 title="Enter the live 3D greenhouse simulation environment"
               >
-                <span>Enter the Greenhouse</span>
+                <span>{t('landing.enterGreenhouse')}</span>
                 <ArrowRight size={18} className="flora-btn-arrow" />
               </button>
 
@@ -84,14 +83,14 @@ export function LandingPage({ onEnterSimulator }) {
                 className="flora-landing-btn-ghost"
                 onClick={() => scrollToSection('species')}
               >
-                <span>Explore Flora</span>
+                <span>{t('landing.exploreFlora')}</span>
                 <ChevronDown size={17} />
               </button>
             </div>
 
             {/* Specimen Switcher Bar */}
             <div className="flora-hero-specimen-selector">
-              <span className="flora-specimen-selector-label">Inspect 3D Specimen:</span>
+              <span className="flora-specimen-selector-label">{t('landing.inspectSpecimen')}</span>
               <div className="flora-specimen-pills">
                 {HERO_SPECIMENS.map((sp) => {
                   const isCurrent = sp.id === activeSpecimen;

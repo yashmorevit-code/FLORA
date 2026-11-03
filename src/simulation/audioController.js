@@ -26,6 +26,7 @@ class BotanicalAudioController {
     let initialMuted = false;
     let initialMode = 'guided'; // Guided Mode by default for immersive botanical documentary experience
     let initialSpeedVariant = '1x';
+    let initialLanguage = 'en';
 
     try {
       const savedVol = sessionStorage.getItem('flora_audio_volume');
@@ -37,6 +38,8 @@ class BotanicalAudioController {
       else if (savedMode === 'guided') initialMode = 'guided';
       const savedVariant = sessionStorage.getItem('flora_speed_variant');
       if (savedVariant === '2x' || savedVariant === '5x') initialSpeedVariant = savedVariant;
+      const savedLang = localStorage.getItem('flora_selected_language') || sessionStorage.getItem('flora_selected_language');
+      if (savedLang === 'hi' || savedLang === 'mr' || savedLang === 'en') initialLanguage = savedLang;
     } catch (e) {}
 
     this.state = {
@@ -56,12 +59,18 @@ class BotanicalAudioController {
       isMuted: initialMuted,
       mode: initialMode, // 'guided' | 'free'
       speedVariant: initialSpeedVariant, // '1x' | '2x' | '5x'
+      language: initialLanguage, // 'en' | 'hi' | 'mr'
       stageFraction: 0.0,
       isCompleted: false,
     };
 
     if (typeof window !== 'undefined') {
       this._initAudioElement();
+      window.addEventListener('flora_language_changed', (evt) => {
+        if (evt.detail && evt.detail.language) {
+          this.setLanguage(evt.detail.language);
+        }
+      });
     }
   }
 
@@ -204,17 +213,49 @@ class BotanicalAudioController {
   }
 
   /**
-   * Loads a narration track for a species, stage, and speed variant.
+   * Set narration language: 'en' | 'hi' | 'mr'
+   * Mid-track language switching seamlessly reloads narration in the new language,
+   * preserving relative playback fraction and play/pause state without resetting the simulation.
+   */
+  setLanguage(lang) {
+    const validLang = (lang === 'hi' || lang === 'mr') ? lang : 'en';
+    if (this.state.language === validLang) return;
+
+    const currentFraction = (this.state.duration > 0)
+      ? (this.state.currentTime / this.state.duration)
+      : (this.state.stageFraction || 0);
+
+    const wasPlaying = this.state.isPlaying;
+    this.state.language = validLang;
+    try {
+      localStorage.setItem('flora_selected_language', validLang);
+      sessionStorage.setItem('flora_selected_language', validLang);
+    } catch (e) {}
+
+    // Reload active stage using the new language, preserving playback fraction
+    this.loadTrack(
+      this.state.speciesId,
+      this.state.stageId,
+      wasPlaying,
+      this.state.speedVariant,
+      currentFraction,
+      validLang
+    );
+  }
+
+  /**
+   * Loads a narration track for a species, stage, speed variant, and language.
    * If seekFraction > 0, seeks to that proportional position upon loading metadata.
    */
-  loadTrack(speciesId, stageId, autoPlay = false, speedVariant = null, seekFraction = 0) {
+  loadTrack(speciesId, stageId, autoPlay = false, speedVariant = null, seekFraction = 0, language = null) {
     if (!speciesId) speciesId = 'tomato';
     if (!stageId) stageId = 'SEED';
 
     const normSpecies = speciesId.toLowerCase();
-    const narration = getStageNarration(normSpecies, stageId);
+    const activeLang = language || this.state.language || 'en';
+    const narration = getStageNarration(normSpecies, stageId, activeLang);
     const activeVariant = speedVariant || this.state.speedVariant || '1x';
-    const audioUrl = getNarrationAudioUrl(normSpecies, stageId, activeVariant);
+    const audioUrl = getNarrationAudioUrl(normSpecies, stageId, activeVariant, activeLang);
 
     // Invalidate any previous asynchronous callbacks
     const token = ++this._token;
@@ -236,6 +277,7 @@ class BotanicalAudioController {
       stageIndex: narration.stageIndex,
       title: narration.title,
       speedVariant: activeVariant,
+      language: activeLang,
       isPlaying: false,
       isLoading: true,
       isBuffering: false,
@@ -252,6 +294,7 @@ class BotanicalAudioController {
       species: normSpecies,
       stage: stageId,
       variant: activeVariant,
+      language: activeLang,
       url: audioUrl,
       autoPlay,
       seekFraction,
@@ -524,11 +567,11 @@ class BotanicalAudioController {
   }
 
   nextStage(autoPlay = false) {
-    const allStages = getAllNarrationsForSpecies(this.state.speciesId);
+    const allStages = getAllNarrationsForSpecies(this.state.speciesId, this.state.language);
     const nextIdx = this.state.stageIndex + 1;
     if (nextIdx < allStages.length) {
       const nextStage = allStages[nextIdx];
-      this.loadTrack(this.state.speciesId, nextStage.stageId, autoPlay, this.state.speedVariant, 0);
+      this.loadTrack(this.state.speciesId, nextStage.stageId, autoPlay, this.state.speedVariant, 0, this.state.language);
       return nextStage;
     } else {
       this.state.isCompleted = true;
@@ -540,11 +583,11 @@ class BotanicalAudioController {
   }
 
   prevStage(autoPlay = false) {
-    const allStages = getAllNarrationsForSpecies(this.state.speciesId);
+    const allStages = getAllNarrationsForSpecies(this.state.speciesId, this.state.language);
     const prevIdx = this.state.stageIndex - 1;
     if (prevIdx >= 0) {
       const prevStage = allStages[prevIdx];
-      this.loadTrack(this.state.speciesId, prevStage.stageId, autoPlay, this.state.speedVariant, 0);
+      this.loadTrack(this.state.speciesId, prevStage.stageId, autoPlay, this.state.speedVariant, 0, this.state.language);
       return prevStage;
     }
     return null;
@@ -558,7 +601,7 @@ class BotanicalAudioController {
     this.state.currentTime = 0;
     this.state.stageFraction = 0;
     this.state.isCompleted = false;
-    this.loadTrack(targetSpecies, 'SEED', false, this.state.speedVariant, 0);
+    this.loadTrack(targetSpecies, 'SEED', false, this.state.speedVariant, 0, this.state.language);
   }
 
   stop() {

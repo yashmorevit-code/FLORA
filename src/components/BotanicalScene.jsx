@@ -3,6 +3,7 @@ import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import { SoilCrossSection } from './SoilCrossSection.jsx';
+import { BotanicalSeedSprout } from './BotanicalSeedSprout.jsx';
 import { RealisticTomatoPlant } from './RealisticTomatoPlant.jsx';
 import { RealisticSunflower } from './RealisticSunflower.jsx';
 import { RealisticStrawberryPlant } from './RealisticStrawberryPlant.jsx';
@@ -38,9 +39,13 @@ function CameraController({
     targetCamPos: new THREE.Vector3(),
     targetLookAt: new THREE.Vector3(),
   });
+  const prevSpeciesRef = useRef(speciesId);
 
   useEffect(() => {
-    if (!cameraPresetToken) return;
+    const speciesChanged = prevSpeciesRef.current !== speciesId;
+    prevSpeciesRef.current = speciesId;
+
+    if (!cameraPresetToken && !speciesChanged) return;
 
     const isSunflower = speciesId === SPECIES_IDS.SUNFLOWER;
     const isStrawberry = speciesId === SPECIES_IDS.STRAWBERRY;
@@ -107,8 +112,8 @@ function CameraController({
     } else {
       // 'overview' or default
       if (isSunflower) {
-        pos = [0, 1.55, 3.4];
-        look = [0, 1.25, 0];
+        pos = [0, 1.75, 4.3];
+        look = [0, 1.45, 0];
       } else if (isStrawberry) {
         pos = [0, 0.38, 1.05];
         look = [0, 0.16, 0];
@@ -367,6 +372,14 @@ export function BotanicalScene({
         <SoilCrossSection
           showRoots={showRoots}
           moisture={environment.moisture}
+        />
+
+        {/* 6b. Underground Botanical Seed Hydration, Radicle Germination & Hypocotyl Emergence */}
+        <BotanicalSeedSprout
+          speciesId={speciesCfg.id}
+          overallProgress={plantState?.overallProgress || 0.0}
+          soilMoisture={environment?.moisture ?? 50}
+          showRoots={showRoots}
         />
 
         {/* 7. Botanical 3D Plant Model Selected by Species ID */}

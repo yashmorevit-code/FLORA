@@ -8,7 +8,6 @@ useGLTF.preload('/assets/plants/rose/rose.glb');
 
 /**
  * Procedural Rose Hip (Urn-shaped hypanthium enclosing achenes)
- * Ripens to bright scarlet-orange post-anthesis.
  */
 function RoseHip({ position, scale = 1.0, maturity = 0.0, isSelected = false, onSelect }) {
   const hipColor = useMemo(() => {
@@ -25,7 +24,6 @@ function RoseHip({ position, scale = 1.0, maturity = 0.0, isSelected = false, on
 
   return (
     <group position={position} scale={scale} onClick={onSelect}>
-      {/* Fleshy spherical/urn hypanthium */}
       <mesh castShadow receiveShadow>
         <sphereGeometry args={[0.022, 12, 12]} />
         <meshStandardMaterial
@@ -35,7 +33,6 @@ function RoseHip({ position, scale = 1.0, maturity = 0.0, isSelected = false, on
           roughness={0.25}
         />
       </mesh>
-      {/* Persistent sepals crowning the hip apex */}
       <mesh position={[0, 0.02, 0]}>
         <coneGeometry args={[0.008, 0.016, 5]} />
         <meshStandardMaterial color="#3e2723" roughness={0.7} />
@@ -61,12 +58,13 @@ function RoseCane({
   plantState,
 }) {
   const caneRef = useRef();
+  const materialsRef = useRef([]);
 
   const clonedObject = useMemo(() => {
     if (!modelScene) return null;
     const clone = modelScene.clone(true);
+    materialsRef.current = [];
 
-    // Filter out lights and cameras embedded in glTF
     const toRemove = [];
     clone.traverse((child) => {
       if (child.isLight || child.isCamera) {
@@ -75,45 +73,36 @@ function RoseCane({
     });
     toRemove.forEach((c) => c.parent && c.parent.remove(c));
 
-    // Normalize bounds: compute bounding box and place base at y = 0
     const box = new THREE.Box3().setFromObject(clone);
     const size = box.getSize(new THREE.Vector3());
     const minY = box.min.y;
     clone.position.set(-box.min.x - size.x * 0.5, -minY, -box.min.z - size.z * 0.5);
 
+    clone.traverse((child) => {
+      if (child.isMesh && child.material) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+        child.material = child.material.clone();
+        child.material.side = THREE.DoubleSide;
+        materialsRef.current.push(child.material);
+      }
+    });
+
     return { obj: clone, height: Math.max(0.1, size.y) };
   }, [modelScene]);
 
-  // Update materials on cloned meshes
+  // Direct material updates without cloning
   useEffect(() => {
-    if (!clonedObject?.obj) return;
-
-    clonedObject.obj.traverse((child) => {
-      if (!child.isMesh) return;
-      child.castShadow = true;
-      child.receiveShadow = true;
-
-      if (child.material) {
-        child.material = child.material.clone();
-        child.material.side = THREE.DoubleSide;
-
-        // Preserve texture map colors; do not tint with solid red/pink so leaves stay green!
-        child.material.color = new THREE.Color('#ffffff');
-        if (foliarTint) {
-          child.material.color.lerp(foliarTint, 0.35);
-        }
-
-        const isHighlight = isSelectedFlower || isSelectedLeaf || isSelectedStem;
-        if (isHighlight) {
-          child.material.emissive = new THREE.Color('#64ffda');
-          child.material.emissiveIntensity = 0.45;
-        } else {
-          child.material.emissive = new THREE.Color('#000000');
-          child.material.emissiveIntensity = 0.0;
-        }
+    const isHighlight = isSelectedFlower || isSelectedLeaf || isSelectedStem;
+    materialsRef.current.forEach((mat) => {
+      mat.color.set('#ffffff');
+      if (foliarTint) {
+        mat.color.lerp(foliarTint, 0.35);
       }
+      mat.emissive.set(isHighlight ? '#64ffda' : '#000000');
+      mat.emissiveIntensity = isHighlight ? 0.45 : 0.0;
     });
-  }, [clonedObject, isSelectedFlower, isSelectedLeaf, isSelectedStem, foliarTint]);
+  }, [isSelectedFlower, isSelectedLeaf, isSelectedStem, foliarTint]);
 
   if (!clonedObject) return null;
 
@@ -125,7 +114,6 @@ function RoseCane({
       scale={[scale, scale, scale]}
       onClick={(e) => {
         e.stopPropagation();
-        // Point Y relative to cane base
         const localY = e.point ? e.point.y : 0.5;
         const stemHeight = plantState.stemHeight || 1.1;
 
@@ -166,9 +154,6 @@ function RoseCane({
 
 /**
  * Realistic Rose Plant Model (Rosa rubiginosa)
- * Features authentic photorealistic 3D botanical asset from fazreil/valentine-ar (MIT),
- * composed into a multi-cane woody shrub with odd-pinnate foliage, multi-petaled corollas,
- * and developing scarlet hypanthium hips.
  */
 export function RealisticRosePlant({
   plantState,
@@ -187,7 +172,6 @@ export function RealisticRosePlant({
     fruitMaturity = 0,
     health = 100,
     waterStress = 0,
-    lightStress = 0,
     senescenceProgress = 0,
     isTerminal = false,
   } = plantState;
@@ -195,7 +179,9 @@ export function RealisticRosePlant({
   const canopyRef = useRef();
   const { scene } = useGLTF('/assets/plants/rose/rose.glb');
 
-  // Foliar tint for chlorosis / senescence
+  // Emergence factor: starts at 0 for progress < 0.06, emerges smoothly
+  const emergenceFactor = Math.min(1.0, Math.max(0.0, (overallProgress - 0.06) / 0.10));
+
   const foliarTint = useMemo(() => {
     if (senescenceProgress > 0) {
       const chlorotic = new THREE.Color('#d4e157');
@@ -208,9 +194,8 @@ export function RealisticRosePlant({
     return null;
   }, [senescenceProgress, waterStress]);
 
-  // Wind sway for woody shrub
   useFrame(({ clock }) => {
-    if (!canopyRef.current) return;
+    if (!canopyRef.current || emergenceFactor <= 0.05) return;
     const t = clock.getElapsedTime();
     const flex = Math.min(1.0, stemHeight * 0.7);
     canopyRef.current.rotation.z = Math.sin(t * 1.4) * (windIntensity * 0.02 * flex);
@@ -221,11 +206,13 @@ export function RealisticRosePlant({
   const isSelectedLeaf = selectedPart?.type === 'leaf' || selectedPart?.id?.includes('leaf');
   const isSelectedStem = selectedPart?.type === 'stem' || selectedPart?.id?.includes('stem');
 
-  // Target scale normalized to native height (~1.74m)
-  const targetHeight = Math.max(0.2, stemHeight || 1.1);
-  const baseScale = targetHeight / 1.74;
+  const targetHeight = Math.max(0.12, stemHeight || 1.1);
+  const baseScale = emergenceFactor > 0 ? (targetHeight / 1.74) * emergenceFactor : 0.0001;
 
-  // Rose hip coordinates
+  // Cane 2 and 3 scaling smoothly
+  const cane2Scale = overallProgress > 0.35 ? Math.min(1.0, (overallProgress - 0.35) / 0.12) : 0;
+  const cane3Scale = overallProgress > 0.55 ? Math.min(1.0, (overallProgress - 0.55) / 0.12) : 0;
+
   const hipPositions = useMemo(() => [
     [0.08, targetHeight * 0.65, 0.06],
     [-0.09, targetHeight * 0.70, 0.05],
@@ -245,102 +232,103 @@ export function RealisticRosePlant({
         isSunflower={false}
       />
 
-      {/* 2. Shrub Canopy */}
-      <group ref={canopyRef} position={[0, 0, 0]}>
-        {/* Central Dominant Cane */}
-        <RoseCane
-          modelScene={scene}
-          position={[0, 0, 0]}
-          rotation={[0.05, 0, -0.04]}
-          scale={baseScale}
-          isSelectedFlower={isSelectedFlower}
-          isSelectedLeaf={isSelectedLeaf}
-          isSelectedStem={isSelectedStem}
-          flowerVisible={flowerCount > 0 && !isTerminal}
-          foliarTint={foliarTint}
-          onSelectPart={onSelectPart}
-          plantState={plantState}
-        />
-
-        {/* Arching Lateral Canes for Mature Shrub Architecture */}
-        {overallProgress > 0.35 && (
+      {/* 2. Shrub Canopy (Only rendered when emerged above soil Y = 0) */}
+      {emergenceFactor > 0.01 && (
+        <group ref={canopyRef} position={[0, 0, 0]}>
           <RoseCane
             modelScene={scene}
-            position={[-0.04, 0, 0.03]}
-            rotation={[0.14, 1.85, -0.18]}
-            scale={baseScale * 0.88}
+            position={[0, 0, 0]}
+            rotation={[0.05, 0, -0.04]}
+            scale={baseScale}
             isSelectedFlower={isSelectedFlower}
             isSelectedLeaf={isSelectedLeaf}
             isSelectedStem={isSelectedStem}
-            flowerVisible={flowerCount > 1 && !isTerminal}
+            flowerVisible={flowerCount > 0 && !isTerminal}
             foliarTint={foliarTint}
             onSelectPart={onSelectPart}
             plantState={plantState}
           />
-        )}
 
-        {overallProgress > 0.55 && (
-          <RoseCane
-            modelScene={scene}
-            position={[0.045, 0, -0.035]}
-            rotation={[-0.12, -2.1, 0.22]}
-            scale={baseScale * 0.82}
-            isSelectedFlower={isSelectedFlower}
-            isSelectedLeaf={isSelectedLeaf}
-            isSelectedStem={isSelectedStem}
-            flowerVisible={flowerCount > 2 && !isTerminal}
-            foliarTint={foliarTint}
-            onSelectPart={onSelectPart}
-            plantState={plantState}
-          />
-        )}
+          {cane2Scale > 0.02 && (
+            <RoseCane
+              modelScene={scene}
+              position={[-0.04, 0, 0.03]}
+              rotation={[0.14, 1.85, -0.18]}
+              scale={baseScale * 0.88 * cane2Scale}
+              isSelectedFlower={isSelectedFlower}
+              isSelectedLeaf={isSelectedLeaf}
+              isSelectedStem={isSelectedStem}
+              flowerVisible={flowerCount > 1 && !isTerminal}
+              foliarTint={foliarTint}
+              onSelectPart={onSelectPart}
+              plantState={plantState}
+            />
+          )}
 
-        {/* 3. Lignified Root Crown Junction */}
-        <mesh
-          position={[0, 0.05, 0]}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelectPart?.({
-              id: 'stem-rose-cane',
-              name: 'Prickly Woody Rose Cane',
-              type: 'stem',
-              species: 'Rose',
-              height: stemHeight,
-              parent: 'Woody Root Crown',
-            });
-          }}
-        >
-          <cylinderGeometry args={[0.02, 0.03, 0.1, 8]} />
-          <meshStandardMaterial
-            color={isSelectedStem ? '#64ffda' : '#3e2723'}
-            emissive={isSelectedStem ? '#64ffda' : '#000000'}
-            emissiveIntensity={isSelectedStem ? 0.35 : 0.0}
-            roughness={0.85}
-          />
-        </mesh>
+          {cane3Scale > 0.02 && (
+            <RoseCane
+              modelScene={scene}
+              position={[0.045, 0, -0.035]}
+              rotation={[-0.12, -2.1, 0.22]}
+              scale={baseScale * 0.82 * cane3Scale}
+              isSelectedFlower={isSelectedFlower}
+              isSelectedLeaf={isSelectedLeaf}
+              isSelectedStem={isSelectedStem}
+              flowerVisible={flowerCount > 2 && !isTerminal}
+              foliarTint={foliarTint}
+              onSelectPart={onSelectPart}
+              plantState={plantState}
+            />
+          )}
 
-        {/* 4. Scarlet Rose Hips (Hypanthia) */}
-        {fruitCount > 0 && hipPositions.slice(0, fruitCount).map((pos, idx) => (
-          <RoseHip
-            key={`rose-hip-${idx}`}
-            position={pos}
-            scale={0.8 + fruitMaturity * 0.4}
-            maturity={fruitMaturity}
-            isSelected={selectedPart?.type === 'fruit' || selectedPart?.id?.includes('hip')}
-            onSelect={(e) => {
+          {/* Lignified Root Crown Junction */}
+          <mesh
+            position={[0, 0.05 * emergenceFactor, 0]}
+            scale={[baseScale * 1.5, baseScale * 1.5, baseScale * 1.5]}
+            onClick={(e) => {
               e.stopPropagation();
               onSelectPart?.({
-                id: `hip-rose-${idx}`,
-                name: 'Scarlet Rose Hip (Hypanthium)',
-                type: 'fruit',
+                id: 'stem-rose-cane',
+                name: 'Prickly Woody Rose Cane',
+                type: 'stem',
                 species: 'Rose',
-                maturity: fruitMaturity,
-                parent: 'Receptacle Apex',
+                height: stemHeight,
+                parent: 'Woody Root Crown',
               });
             }}
-          />
-        ))}
-      </group>
+          >
+            <cylinderGeometry args={[0.02, 0.03, 0.1, 8]} />
+            <meshStandardMaterial
+              color={isSelectedStem ? '#64ffda' : '#3e2723'}
+              emissive={isSelectedStem ? '#64ffda' : '#000000'}
+              emissiveIntensity={isSelectedStem ? 0.35 : 0.0}
+              roughness={0.85}
+            />
+          </mesh>
+
+          {/* Scarlet Rose Hips */}
+          {fruitCount > 0 && hipPositions.slice(0, fruitCount).map((pos, idx) => (
+            <RoseHip
+              key={`rose-hip-${idx}`}
+              position={pos}
+              scale={(0.8 + fruitMaturity * 0.4) * Math.min(1.0, (overallProgress - 0.5) / 0.2)}
+              maturity={fruitMaturity}
+              isSelected={selectedPart?.type === 'fruit' || selectedPart?.id?.includes('hip')}
+              onSelect={(e) => {
+                e.stopPropagation();
+                onSelectPart?.({
+                  id: `hip-rose-${idx}`,
+                  name: 'Scarlet Rose Hip (Hypanthium)',
+                  type: 'fruit',
+                  species: 'Rose',
+                  maturity: fruitMaturity,
+                  parent: 'Receptacle Apex',
+                });
+              }}
+            />
+          ))}
+        </group>
+      )}
     </group>
   );
 }

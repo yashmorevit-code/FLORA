@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Sprout, ArrowRight, Menu, X, Compass, Sparkles } from 'lucide-react';
+import { useTranslation } from '../../i18n/index.jsx';
+import LanguageSelector from '../LanguageSelector.jsx';
 
 export function LandingNavigation({ onEnterSimulator }) {
+  const { t } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -44,7 +47,7 @@ export function LandingNavigation({ onEnterSimulator }) {
           </div>
           <div className="flora-landing-brand-text">
             <span className="flora-landing-brand-title">FLORA</span>
-            <span className="flora-landing-brand-sub">Botanical Growth Simulator</span>
+            <span className="flora-landing-brand-sub">{t('app.subtitle')}</span>
           </div>
         </div>
 
@@ -55,40 +58,41 @@ export function LandingNavigation({ onEnterSimulator }) {
             className="flora-landing-nav-link"
             onClick={() => scrollTo('species')}
           >
-            Living Species
+            {t('landing.speciesShowcase')}
           </button>
           <button
             type="button"
             className="flora-landing-nav-link"
             onClick={() => scrollTo('environment')}
           >
-            Environmental Physics
+            {t('landing.physicsEngine')}
           </button>
           <button
             type="button"
             className="flora-landing-nav-link"
             onClick={() => scrollTo('lifecycle')}
           >
-            Phenological Stages
+            {t('landing.lifecycle')}
           </button>
           <button
             type="button"
             className="flora-landing-nav-link"
             onClick={() => scrollTo('telemetry')}
           >
-            Scientific Telemetry
+            {t('landing.telemetry')}
           </button>
         </div>
 
-        {/* CTA Button */}
+        {/* CTA Button & Language Selector */}
         <div className="flora-landing-nav-actions">
+          <LanguageSelector />
           <button
             type="button"
             className="flora-landing-btn-primary"
             onClick={() => onEnterSimulator()}
             title="Enter the live 3D botanical greenhouse simulation"
           >
-            <span>Enter the Greenhouse</span>
+            <span>{t('landing.enterGreenhouse')}</span>
             <ArrowRight size={16} className="flora-btn-arrow" />
           </button>
 
@@ -113,30 +117,31 @@ export function LandingNavigation({ onEnterSimulator }) {
             className="flora-landing-mobile-link"
             onClick={() => scrollTo('species')}
           >
-            Living Species
+            {t('landing.speciesShowcase')}
           </button>
           <button
             type="button"
             className="flora-landing-mobile-link"
             onClick={() => scrollTo('environment')}
           >
-            Environmental Physics
+            {t('landing.physicsEngine')}
           </button>
           <button
             type="button"
             className="flora-landing-mobile-link"
             onClick={() => scrollTo('lifecycle')}
           >
-            Phenological Stages
+            {t('landing.lifecycle')}
           </button>
           <button
             type="button"
             className="flora-landing-mobile-link"
             onClick={() => scrollTo('telemetry')}
           >
-            Scientific Telemetry
+            {t('landing.telemetry')}
           </button>
-          <div className="flora-landing-mobile-cta">
+          <div className="flora-landing-mobile-cta" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <LanguageSelector />
             <button
               type="button"
               className="flora-landing-btn-primary full-width"
@@ -145,8 +150,8 @@ export function LandingNavigation({ onEnterSimulator }) {
                 onEnterSimulator();
               }}
             >
-              <span>Enter the Greenhouse</span>
-              <ArrowRight size={16} />
+              <span>{t('landing.enterGreenhouse')}</span>
+              <ArrowRight size={16} className="flora-btn-arrow" />
             </button>
           </div>
         </div>

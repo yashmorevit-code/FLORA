@@ -4,18 +4,12 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { ProceduralRoots } from './ProceduralRoots.jsx';
 
-// Preload 3D wheat asset
 useGLTF.preload('/assets/plants/wheat/wheat_stalks.glb');
 
 /**
  * Realistic Wheat Plant Model (Triticum aestivum)
  * Integrates authentic 3D wheat model from Google Poly / Poly Pizza (CC-BY 3.0).
  * Features realistic jointed culms, graminoid leaf blades, and terminal distichous spikelets with long awns (beards).
- * Coupled to FLORA's deterministic growth engine:
- * - Dynamic height scaling based on stemHeight & overallProgress
- * - Tillering multiplier: activates additional tiller clumps as vegetative progress advances
- * - Grain maturation: color transition from lush photosynthetic green to rich golden harvest straw
- * - Full interactive part inspection: culm, leaves, and terminal grain spike
  */
 export function RealisticWheatPlant({
   plantState,
@@ -38,17 +32,21 @@ export function RealisticWheatPlant({
   } = plantState;
 
   const canopyRef = useRef();
+  const materialsRef = useRef([]);
+
   const { scene } = useGLTF('/assets/plants/wheat/wheat_stalks.glb');
 
+  // Emergence factor: canopy scale starts at 0 for progress < 0.06, emerges smoothly
+  const emergenceFactor = Math.min(1.0, Math.max(0.0, (overallProgress - 0.06) / 0.10));
+
   // Dynamic scale factor:
-  // Native wheat_stalks.glb height is ~220 units.
-  // Standard mature wheat reaches ~0.8m to 1.1m.
   const targetHeight = Math.max(0.12, stemHeight || 0.85);
   const uniformScale = useMemo(() => {
+    if (emergenceFactor <= 0) return 0.0001;
     const matureScale = targetHeight / 220.0;
-    const growthMult = Math.min(1.0, Math.max(0.15, overallProgress * 1.1));
-    return matureScale * growthMult;
-  }, [targetHeight, overallProgress]);
+    const growthMult = Math.min(1.0, Math.max(0.08, overallProgress * 1.1));
+    return matureScale * growthMult * emergenceFactor;
+  }, [targetHeight, overallProgress, emergenceFactor]);
 
   // Color transition for cereal ripening: green (anthesis) -> milky dough amber -> golden straw
   const strawColor = useMemo(() => {
@@ -72,53 +70,52 @@ export function RealisticWheatPlant({
     return c;
   }, [fruitMaturity, senescenceProgress, waterStress]);
 
-  const isSelectedCulm = selectedPart?.type === 'stem' || selectedPart?.id?.includes('culm') || selectedPart?.id?.includes('tiller');
-  const isSelectedLeaf = selectedPart?.type === 'leaf' || selectedPart?.id?.includes('leaf');
-  const isSelectedSpike = selectedPart?.type === 'ear' || selectedPart?.type === 'fruit' || selectedPart?.id?.includes('spike');
-
-  // Clone and configure materials for all instances
+  // Clone scene ONCE
   const clonedScene = useMemo(() => {
     const clone = scene.clone(true);
+    materialsRef.current = [];
     clone.traverse(child => {
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;
         if (child.material) {
           child.material = child.material.clone();
-          child.material.color = strawColor;
           child.material.side = THREE.DoubleSide;
           child.material.roughness = 0.55;
           child.material.metalness = 0.05;
+          materialsRef.current.push(child.material);
         }
       }
     });
     return clone;
-  }, [scene, strawColor]);
+  }, [scene]);
 
-  // Update selection highlight dynamically
+  // Direct material updates without cloning
   useEffect(() => {
-    if (!clonedScene) return;
-    clonedScene.traverse(child => {
-      if (child.isMesh && child.material) {
-        if (isSelectedCulm || isSelectedLeaf || isSelectedSpike) {
-          child.material.emissive = new THREE.Color('#64ffda');
-          child.material.emissiveIntensity = 0.35;
-        } else {
-          child.material.emissive = new THREE.Color('#000000');
-          child.material.emissiveIntensity = 0.0;
-        }
-      }
+    const isSelectedCulm = selectedPart?.type === 'stem' || selectedPart?.id?.includes('culm') || selectedPart?.id?.includes('tiller');
+    const isSelectedLeaf = selectedPart?.type === 'leaf' || selectedPart?.id?.includes('leaf');
+    const isSelectedSpike = selectedPart?.type === 'ear' || selectedPart?.type === 'fruit' || selectedPart?.id?.includes('spike');
+    const isHighlight = isSelectedCulm || isSelectedLeaf || isSelectedSpike;
+
+    materialsRef.current.forEach(mat => {
+      mat.color.copy(strawColor);
+      mat.emissive.set(isHighlight ? '#64ffda' : '#000000');
+      mat.emissiveIntensity = isHighlight ? 0.35 : 0.0;
     });
-  }, [clonedScene, isSelectedCulm, isSelectedLeaf, isSelectedSpike]);
+  }, [strawColor, selectedPart]);
 
   // Gentle rhythmic wind sway
   useFrame(({ clock }) => {
-    if (!canopyRef.current) return;
+    if (!canopyRef.current || emergenceFactor <= 0.05) return;
     const t = clock.getElapsedTime();
     const flex = Math.min(1.0, stemHeight / 0.85);
     canopyRef.current.rotation.z = Math.sin(t * 1.8) * (windIntensity * 0.025 * flex);
     canopyRef.current.rotation.x = Math.cos(t * 1.4) * (windIntensity * 0.018 * flex);
   });
+
+  // Tiller scaling: emerges smoothly starting from threshold
+  const tiller1Scale = overallProgress >= 0.35 ? Math.min(1.0, (overallProgress - 0.35) / 0.12) : 0;
+  const tiller2Scale = overallProgress >= 0.50 ? Math.min(1.0, (overallProgress - 0.50) / 0.12) : 0;
 
   return (
     <group position={[0, 0, 0]}>
@@ -134,66 +131,68 @@ export function RealisticWheatPlant({
       />
 
       {/* 2. Above-Ground Jointed Wheat Stalks */}
-      <group ref={canopyRef} position={[0, 0, 0]}>
-        {/* Main Central Wheat Stalk Cluster */}
-        <primitive
-          object={clonedScene}
-          scale={[uniformScale, uniformScale, uniformScale]}
-          position={[0, -0.02, 0]}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelectPart?.({
-              id: 'ear-wheat-spike',
-              name: 'Terminal Bearded Wheat Spike (Ear)',
-              type: 'ear',
-              species: 'Wheat',
-              maturity: fruitMaturity,
-              parent: 'Jointed Culm Axis',
-            });
-          }}
-        />
-
-        {/* Tillering Clump Stalks: additional clumps activate at higher vegetative progress */}
-        {overallProgress >= 0.35 && (
-          <group
-            position={[-0.04, 0, 0.03]}
-            rotation={[0.06, 1.2, -0.05]}
-            scale={[uniformScale * 0.9, uniformScale * 0.9, uniformScale * 0.9]}
+      {emergenceFactor > 0.01 && (
+        <group ref={canopyRef} position={[0, 0, 0]}>
+          <primitive
+            object={clonedScene}
+            scale={[uniformScale, uniformScale, uniformScale]}
+            position={[0, -0.02, 0]}
             onClick={(e) => {
               e.stopPropagation();
               onSelectPart?.({
-                id: 'stem-wheat-culm',
-                name: 'Secondary Tiller Culm with Awned Spike',
-                type: 'stem',
+                id: 'ear-wheat-spike',
+                name: 'Terminal Bearded Wheat Spike (Ear)',
+                type: 'ear',
                 species: 'Wheat',
-                parent: 'Crown Tillering Ring',
+                maturity: fruitMaturity,
+                parent: 'Jointed Culm Axis',
               });
             }}
-          >
-            <primitive object={clonedScene.clone(true)} />
-          </group>
-        )}
+          />
 
-        {overallProgress >= 0.50 && (
-          <group
-            position={[0.04, 0, -0.03]}
-            rotation={[-0.05, -1.5, 0.06]}
-            scale={[uniformScale * 0.85, uniformScale * 0.85, uniformScale * 0.85]}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelectPart?.({
-                id: 'stem-wheat-culm',
-                name: 'Tertiary Tiller Culm',
-                type: 'stem',
-                species: 'Wheat',
-                parent: 'Crown Tillering Ring',
-              });
-            }}
-          >
-            <primitive object={clonedScene.clone(true)} />
-          </group>
-        )}
-      </group>
+          {/* Secondary Tiller Culm */}
+          {tiller1Scale > 0.02 && (
+            <group
+              position={[-0.04, 0, 0.03]}
+              rotation={[0.06, 1.2, -0.05]}
+              scale={[uniformScale * 0.9 * tiller1Scale, uniformScale * 0.9 * tiller1Scale, uniformScale * 0.9 * tiller1Scale]}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelectPart?.({
+                  id: 'stem-wheat-culm',
+                  name: 'Secondary Tiller Culm with Awned Spike',
+                  type: 'stem',
+                  species: 'Wheat',
+                  parent: 'Crown Tillering Ring',
+                });
+              }}
+            >
+              <primitive object={clonedScene.clone(true)} />
+            </group>
+          )}
+
+          {/* Tertiary Tiller Culm */}
+          {tiller2Scale > 0.02 && (
+            <group
+              position={[0.04, 0, -0.03]}
+              rotation={[-0.05, -1.5, 0.06]}
+              scale={[uniformScale * 0.85 * tiller2Scale, uniformScale * 0.85 * tiller2Scale, uniformScale * 0.85 * tiller2Scale]}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelectPart?.({
+                  id: 'stem-wheat-culm',
+                  name: 'Tertiary Tiller Culm',
+                  type: 'stem',
+                  species: 'Wheat',
+                  parent: 'Crown Tillering Ring',
+                });
+              }}
+            >
+              <primitive object={clonedScene.clone(true)} />
+            </group>
+          )}
+        </group>
+      )}
     </group>
   );
 }

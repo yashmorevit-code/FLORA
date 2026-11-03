@@ -4,6 +4,7 @@ import { STAGE_CONFIGS } from '../simulation/types.js';
 import { getAllStagesForSpecies, getSpeciesConfig, SPECIES_IDS } from '../simulation/species.js';
 import { BotanicalGuidePanel } from './BotanicalGuidePanel.jsx';
 import { audioController } from '../simulation/audioController.js';
+import { useTranslation } from '../i18n/index.jsx';
 
 export function TimelineBar({
   plantState,
@@ -18,6 +19,7 @@ export function TimelineBar({
   onToggleBotanicalGuide,
   onInspectOrgan,
 }) {
+  const { t } = useTranslation();
   const speciesCfg = getSpeciesConfig(plantState?.speciesId);
   const stages = getAllStagesForSpecies(speciesCfg);
   const currentStage = stages[plantState.stageIndex] || stages[0];
@@ -90,7 +92,7 @@ export function TimelineBar({
               title={isTerminal ? 'Simulation completed' : isPlaying ? 'Pause continuous simulation' : 'Play continuous growth simulation'}
             >
               {isPlaying ? <Pause size={15} /> : <Play size={15} />}
-              <span>{isPlaying ? 'Pause' : 'Play'}</span>
+              <span>{isPlaying ? t('timeline.pause') : t('timeline.play')}</span>
             </button>
 
             <button
@@ -101,7 +103,7 @@ export function TimelineBar({
               title={isTerminal ? 'Plant lifecycle complete' : 'Advance 1 step (~1.5 simulated days)'}
             >
               <StepForward size={14} />
-              <span>Step</span>
+              <span>{t('timeline.step')}</span>
             </button>
 
             <button
@@ -111,14 +113,14 @@ export function TimelineBar({
               title="Reset to Day 0 (Seed stage)"
             >
               <RotateCcw size={14} />
-              <span>Reset</span>
+              <span>{t('timeline.reset')}</span>
             </button>
           </div>
 
           {/* Speed Multipliers, Synchronization Mode & Botanical Guide Anchor */}
           <div className="speed-and-guide-anchor">
             <div className="speed-multiplier-group">
-              <span className="speed-label">Speed:</span>
+              <span className="speed-label">{t('timeline.speed')}:</span>
               <div className="speed-pills">
                 {[1, 2, 5].map((s) => (
                   <button
@@ -145,13 +147,13 @@ export function TimelineBar({
                 }
               >
                 <Film size={12} />
-                <span>{isGuided ? 'Guided Mode' : 'Free Mode'}</span>
+                <span>{isGuided ? t('timeline.guidedMode') : t('timeline.freeMode')}</span>
               </button>
 
               {/* Narration Variant Badge in Guided Mode */}
               {isGuided && (
                 <span className="narration-variant-badge" title="Active narration detail level">
-                  {speed === 1 ? 'Full Story' : speed === 2 ? 'Concise' : 'Key Points'}
+                  {speed === 1 ? t('timeline.fullStory') : speed === 2 ? t('timeline.concise') : t('timeline.keyPoints')}
                 </span>
               )}
 
@@ -165,7 +167,7 @@ export function TimelineBar({
                   aria-expanded={showBotanicalGuide}
                 >
                   <Headphones size={14} />
-                  <span>Guide</span>
+                  <span>{t('panels.guide')}</span>
                 </button>
               )}
             </div>
@@ -190,9 +192,9 @@ export function TimelineBar({
           <div className="status-item age-indicator">
             <Calendar size={14} className="status-item-icon" />
             <span>
-              Simulated Age:{' '}
+              {t('timeline.simulatedAge')}:{' '}
               <strong className="status-highlight">
-                Day {Math.floor(plantState.ageDays || 0)}
+                {t('timeline.day')} {Math.floor(plantState.ageDays || 0)}
               </strong>{' '}
               <small className="status-sub">({(plantState.ageDays || 0).toFixed(1)} d)</small>
             </span>
@@ -201,9 +203,9 @@ export function TimelineBar({
           {/* Current Lifecycle Stage Indicator */}
           <div className="status-item phase-indicator">
             <span>
-              Phase:{' '}
+              {t('timeline.phase')}:{' '}
               <strong className="status-highlight-green">
-                {currentStage?.name}
+                {t(`stages.${currentStage?.stage}.name`, currentStage?.name)}
               </strong>{' '}
               <span className="status-sub">
                 ({Math.round((plantState.stageProgress || 0) * 100)}%)
@@ -216,9 +218,9 @@ export function TimelineBar({
             <div className="status-item guided-sync-indicator" title="Simulation is synchronized with Botanical Guide narration">
               <span className={`sync-pulse-dot ${audioState.isPlaying ? 'pulsing' : ''}`} />
               <span>
-                Guided Pace:{' '}
+                {t('timeline.guidedPace', 'Guided Pace')}:{' '}
                 <strong className="status-highlight-cyan">
-                  {audioState.speedVariant === '1x' ? '1x Full' : audioState.speedVariant === '2x' ? '2x Concise' : '5x Key Points'}
+                  {audioState.speedVariant === '1x' ? `1x ${t('timeline.fullStory')}` : audioState.speedVariant === '2x' ? `2x ${t('timeline.concise')}` : `5x ${t('timeline.keyPoints')}`}
                 </strong>
               </span>
             </div>
@@ -283,16 +285,18 @@ export function TimelineBar({
           {stages.map((cfg, idx) => {
             const isActive = plantState.stageIndex === idx;
             const isCompleted = plantState.stageIndex > idx;
+            const stageName = t(`stages.${cfg.stage}.name`, cfg.name);
+            const stageDesc = t(`stages.${cfg.stage}.desc`, cfg.desc);
             return (
               <button
                 key={cfg.stage}
                 type="button"
                 className={`timeline-stage-chip ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}
                 onClick={() => onSelectStage(cfg.minProgress, cfg.minDay, cfg.stage)}
-                title={`${cfg.name} (Day ${cfg.minDay}–${cfg.maxDay}): ${cfg.desc}`}
+                title={`${stageName} (Day ${cfg.minDay}–${cfg.maxDay}): ${stageDesc}`}
               >
                 <span className="stage-chip-step">{idx + 1}</span>
-                <span className="stage-chip-name">{cfg.name}</span>
+                <span className="stage-chip-name">{stageName}</span>
               </button>
             );
           })}

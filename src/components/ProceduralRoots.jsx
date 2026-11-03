@@ -1,4 +1,4 @@
-import React, { useMemo, Suspense } from 'react';
+import React, { useMemo, useEffect, useRef, Suspense } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -28,10 +28,12 @@ function PhotogrammetricRootCrown({ rootDepth, health, isTaprootSelected, isSunf
     return c;
   }, [scene, isTaprootSelected]);
 
-  if (!clone || rootDepth < 0.16) return null;
+  // Smooth emergence factor instead of hard cutoff at 0.16
+  const crownGrowth = Math.min(1.0, Math.max(0.0, (rootDepth - 0.12) / 0.10));
+  if (!clone || crownGrowth <= 0.02) return null;
 
   // Scale gracefully with depth
-  const s = Math.min(0.14, 0.04 + rootDepth * 0.06) * (isSunflower ? 1.25 : 1.0);
+  const s = Math.min(0.14, 0.04 + rootDepth * 0.06) * (isSunflower ? 1.25 : 1.0) * crownGrowth;
 
   return (
     <primitive
@@ -63,7 +65,6 @@ function createTaperedRootGeometry(points, startRadius, endRadius, radialSegment
     const p = curve.getPointAt(u);
     const N = frames.normals[i];
     const B = frames.binormals[i];
-    // Natural non-linear tapering with organic root tip swelling/slenderness
     const radius = THREE.MathUtils.lerp(startRadius, endRadius, Math.pow(u, 0.85));
 
     for (let j = 0; j <= radialSegments; j++) {
@@ -111,7 +112,6 @@ function createTaperedRootGeometry(points, startRadius, endRadius, radialSegment
 
 /**
  * Botanical Procedural Root System with continuous tip elongation & interactive selection
- * Supports distinct root architectures for Tomato (diffuse lateral branching) and Sunflower (anchoring deep taproot).
  */
 export function ProceduralRoots({
   rootDepth = 0.1,
@@ -122,7 +122,6 @@ export function ProceduralRoots({
   onSelectPart = null,
   isSunflower = false,
 }) {
-  // Realistic root coloration: woody suberized collar transitioning to ivory young absorbing tips
   const rootColor = useMemo(() => {
     const healthNorm = Math.min(1.0, Math.max(0.0, health / 100));
     const healthyC = new THREE.Color(isSunflower ? '#f0ede4' : '#f5f2e8');
@@ -130,15 +129,22 @@ export function ProceduralRoots({
     return stressedC.lerp(healthyC, healthNorm);
   }, [health, isSunflower]);
 
-  // Woody root collar coloration at the soil line (crown transition)
   const collarColor = useMemo(() => {
     return new THREE.Color(isSunflower ? '#735841' : '#694e37');
   }, [isSunflower]);
 
-  // Highlight color for selection
   const highlightColor = useMemo(() => new THREE.Color('#64ffda'), []);
 
-  // 1. Root Collar transition ring at Y = 0 (attaches smoothly to stem base)
+  // Previous geometry cleanup ref to prevent GPU buffer leaks
+  const prevGeomsRef = useRef([]);
+  useEffect(() => {
+    return () => {
+      prevGeomsRef.current.forEach((g) => g && g.dispose && g.dispose());
+      prevGeomsRef.current = [];
+    };
+  }, []);
+
+  // 1. Root Collar transition ring at Y = 0
   const collarGeometry = useMemo(() => {
     if (rootDepth < 0.04) return null;
     const pts = [
@@ -148,18 +154,19 @@ export function ProceduralRoots({
     ];
     const topRadius = isSunflower ? 0.065 : 0.048;
     const botRadius = isSunflower ? 0.045 : 0.035;
-    return createTaperedRootGeometry(pts, topRadius, botRadius, 10);
+    const g = createTaperedRootGeometry(pts, topRadius, botRadius, 10);
+    prevGeomsRef.current.push(g);
+    return g;
   }, [rootDepth, isSunflower]);
 
-  // 2. Primary Taproot (continuously extends downwards with natural geotropic meandering)
+  // 2. Primary Taproot
   const taprootGeometry = useMemo(() => {
-    if (rootDepth < 0.03) return null;
-    const currentDepth = Math.max(0.04, rootDepth);
+    if (rootDepth < 0.025) return null;
+    const currentDepth = Math.max(0.03, rootDepth);
 
-    // Geotropic path with subtle sinuosity as it maneuvers soil particles
     const points = isSunflower
       ? [
-          new THREE.Vector3(0, -0.03, 0),
+          new THREE.Vector3(0, -0.01, 0),
           new THREE.Vector3(0.012, -currentDepth * 0.22, 0.008),
           new THREE.Vector3(-0.015, -currentDepth * 0.45, -0.01),
           new THREE.Vector3(0.018, -currentDepth * 0.72, 0.009),
@@ -167,7 +174,7 @@ export function ProceduralRoots({
           new THREE.Vector3(0.002, -currentDepth, 0.001),
         ]
       : [
-          new THREE.Vector3(0, -0.03, 0),
+          new THREE.Vector3(0, -0.01, 0),
           new THREE.Vector3(0.016, -currentDepth * 0.2, 0.012),
           new THREE.Vector3(-0.022, -currentDepth * 0.44, -0.016),
           new THREE.Vector3(0.026, -currentDepth * 0.7, 0.014),
@@ -176,13 +183,15 @@ export function ProceduralRoots({
         ];
 
     const baseRadius = isSunflower
-      ? Math.min(0.062, 0.024 + currentDepth * 0.016) // Thicker strong anchoring taproot
-      : Math.min(0.042, 0.015 + currentDepth * 0.012);
-    const tipRadius = isSunflower ? 0.005 : 0.0035;
-    return createTaperedRootGeometry(points, baseRadius, tipRadius, 8);
+      ? Math.min(0.062, 0.020 + currentDepth * 0.016)
+      : Math.min(0.042, 0.014 + currentDepth * 0.012);
+    const tipRadius = isSunflower ? 0.004 : 0.003;
+    const g = createTaperedRootGeometry(points, baseRadius, tipRadius, 8);
+    prevGeomsRef.current.push(g);
+    return g;
   }, [rootDepth, isSunflower]);
 
-  // 3. Lateral Roots with continuous elongation & smooth curvature
+  // 3. Lateral Roots with continuous elongation
   const { lateralBranches, tertiaryRootlets } = useMemo(() => {
     if (rootDepth < 0.12 || rootSpread < 0.04) {
       return { lateralBranches: [], tertiaryRootlets: [] };
@@ -190,7 +199,7 @@ export function ProceduralRoots({
 
     const laterals = [];
     const rootlets = [];
-    const maxBranchSites = isSunflower ? 16 : 22; // Sunflower concentrates laterals on upper anchoring crown
+    const maxBranchSites = isSunflower ? 16 : 22;
 
     for (let i = 0; i < maxBranchSites; i++) {
       const emergenceDepth = 0.12 + (i / maxBranchSites) * (isSunflower ? 1.4 : 1.7);
@@ -203,14 +212,12 @@ export function ProceduralRoots({
       const originY = -Math.max(0.04, emergenceDepth * frac * 0.88);
       const angle = (i * 2.39996) % (Math.PI * 2);
 
-      // Radial spread and downwards curvature
       const targetSpread =
         rootSpread * (isSunflower ? 1.2 - frac * 0.6 : 1.1 - frac * 0.45) * (0.65 + (i % 4) * 0.14) * branchMaturity;
       const endX = Math.cos(angle) * targetSpread;
       const endZ = Math.sin(angle) * targetSpread;
       const endY = originY - (0.14 + (i % 3) * 0.09) * branchMaturity;
 
-      // Natural S-curve points simulating resistance through soil horizons
       const mid1X = endX * 0.35 + Math.sin(angle * 1.5) * 0.035 * branchMaturity;
       const mid1Z = endZ * 0.35 + Math.cos(angle * 1.5) * 0.035 * branchMaturity;
       const mid1Y = originY - 0.03 * branchMaturity;
@@ -226,9 +233,10 @@ export function ProceduralRoots({
         new THREE.Vector3(endX, endY, endZ),
       ];
 
-      const startR = Math.max(0.008, (isSunflower ? 0.018 : 0.015) * (1.0 - frac * 0.38) * branchMaturity);
-      const endR = 0.003;
+      const startR = Math.max(0.007, (isSunflower ? 0.016 : 0.013) * (1.0 - frac * 0.38) * branchMaturity);
+      const endR = 0.0028;
       const geom = createTaperedRootGeometry(branchPoints, startR, endR, 6);
+      prevGeomsRef.current.push(geom);
 
       const branchId = `root-lateral-${i}`;
       laterals.push({
@@ -238,7 +246,7 @@ export function ProceduralRoots({
         maturity: branchMaturity,
       });
 
-      // Fine tertiary absorbing rootlets on mature branch roots
+      // Fine tertiary absorbing rootlets
       if (branchMaturity > 0.72 && i % 2 === 0) {
         const rootletAngle = angle + (i % 2 === 0 ? 0.65 : -0.65);
         const rSpread = 0.085 * (rootSpread / 1.5) * ((branchMaturity - 0.72) / 0.28);
@@ -256,7 +264,8 @@ export function ProceduralRoots({
           new THREE.Vector3(rEndX, rEndY, rEndZ),
         ];
 
-        const rGeom = createTaperedRootGeometry(subPoints, 0.004, 0.0016, 5);
+        const rGeom = createTaperedRootGeometry(subPoints, 0.0035, 0.0015, 5);
+        prevGeomsRef.current.push(rGeom);
         rootlets.push({
           id: `rootlet-${i}`,
           geom: rGeom,
@@ -265,10 +274,16 @@ export function ProceduralRoots({
       }
     }
 
+    // Keep memory clean: dispose items beyond recent allocation window
+    if (prevGeomsRef.current.length > 120) {
+      const purge = prevGeomsRef.current.splice(0, prevGeomsRef.current.length - 60);
+      purge.forEach((g) => g && g.dispose && g.dispose());
+    }
+
     return { lateralBranches: laterals, tertiaryRootlets: rootlets };
   }, [rootDepth, rootSpread, isSunflower]);
 
-  if (!visible || rootDepth < 0.03) return null;
+  if (!visible || rootDepth < 0.025) return null;
 
   const isTaprootSelected = selectedPart?.id === 'root-taproot';
 
@@ -285,7 +300,7 @@ export function ProceduralRoots({
         </mesh>
       )}
 
-      {/* Photorealistic 3D Root Crown Flare (Poly Haven CC0) */}
+      {/* Photorealistic 3D Root Crown Flare */}
       <Suspense fallback={null}>
         <PhotogrammetricRootCrown
           rootDepth={rootDepth}

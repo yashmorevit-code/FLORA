@@ -66,3 +66,9 @@ referrencevideos/
 
 deployment_verification_screenshots/
 
+
+# Temporary investigation artifacts & dumps
+*.mjs
+*_dump.json
+stage6_investigation/
+stage6_verification/

@@ -81,21 +81,20 @@ export function AnatomyAnnotations({
   selectedPart = null,
   onSelectPart = null,
 }) {
-  if (!visible || annotationMode === 'hidden' || !plantState) return null;
-
-  const speciesCfg = getSpeciesConfig(plantState.speciesId);
+  const speciesCfg = getSpeciesConfig(plantState?.speciesId);
   const speciesId = speciesCfg.id;
   const isSunflower = speciesId === SPECIES_IDS.SUNFLOWER;
-  const stemHeight = plantState.stemHeight || 0.0;
-  const rootDepth = plantState.rootDepth || 0.1;
-  const rootSpread = plantState.rootSpread || 0.1;
-  const overallProgress = plantState.overallProgress || 0.0;
-  const flowerCount = plantState.flowerCount || 0;
-  const fruitCount = plantState.fruitCount || 0;
-  const fruitMaturity = plantState.fruitMaturity || 0.0;
+  const stemHeight = plantState?.stemHeight || 0.0;
+  const rootDepth = plantState?.rootDepth || 0.1;
+  const rootSpread = plantState?.rootSpread || 0.1;
+  const overallProgress = plantState?.overallProgress || 0.0;
+  const flowerCount = plantState?.flowerCount || 0;
+  const fruitCount = plantState?.fruitCount || 0;
+  const fruitMaturity = plantState?.fruitMaturity || 0.0;
 
   // 1. Build authoritative list of physically existing organs in the current procedural model
   const allAnnotations = useMemo(() => {
+    if (!plantState) return [];
     const list = [];
 
     // ==========================================
@@ -464,7 +463,7 @@ export function AnatomyAnnotations({
       else if (apexItem) selected.push(apexItem);
 
       // 2. Foliar landmark: Compound / Cordate leaf
-      const leafItem = allAnnotations.find((a) => a.id === 'leaf-compound');
+      const leafItem = allAnnotations.find((a) => a.id === 'leaf-main' || a.id === 'leaf-compound');
       if (leafItem) selected.push(leafItem);
 
       // 3. Generative landmark: Ripening fruit, developing fruit, or flower
@@ -490,6 +489,9 @@ export function AnatomyAnnotations({
     // ALL ANATOMY MODE: Show all available organs with collision relaxation
     return applyCollisionSpacing(allAnnotations);
   }, [allAnnotations, annotationMode, selectedPart, showRoots, overallProgress]);
+
+  // Placed AFTER all hooks to adhere strictly to React's Rules of Hooks
+  if (!visible || annotationMode === 'hidden' || !plantState) return null;
 
   return (
     <group position={[0, 0, 0]}>
